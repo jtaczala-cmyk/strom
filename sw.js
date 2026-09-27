@@ -1,5 +1,5 @@
-const CACHE = "strom-v3-gh-strom-v2";
-const PRECACHE = ["/strom/", "/strom/favicon.svg", "/strom/apple-touch-icon.png", "/strom/icon-192.png", "/strom/icon-512.png"];
+const CACHE = "strom-v3-gh-strom-v3";
+const PRECACHE = ["/strom/", "/strom/favicon.svg", "/strom/apple-touch-icon.png", "/strom/icon-192.png", "/strom/icon-512.png", "/strom/qr.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
