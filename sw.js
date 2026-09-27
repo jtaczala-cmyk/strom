@@ -1,6 +1,6 @@
-const CACHE = "strom-nb-gh-v4";
+const CACHE = "strom-nb-gh-v5";
 const BASE = "/strom/";
-const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png"];
+const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "config.js"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -29,7 +29,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
 
   // Pages/HTML and the SW-adjacent files: always network first, bypassing the HTTP cache.
-  const isDoc = req.mode === "navigate" || url.pathname === BASE || url.pathname.endsWith(".html") || url.pathname.endsWith(".webmanifest");
+  const isDoc = req.mode === "navigate" || url.pathname === BASE || url.pathname.endsWith(".html") || url.pathname.endsWith(".webmanifest") || url.pathname.endsWith("/config.js") || url.pathname.endsWith("/extras.js");
   if (isDoc) {
     event.respondWith(
       fetch(req.url, { cache: "no-store", credentials: "same-origin" })
