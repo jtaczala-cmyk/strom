@@ -340,11 +340,12 @@
         if (s.phase === "playing" && p.phase !== "paused") {
           highAtStart = p.highScore || 0;
           SFX.start();
-          setTimeout(function () { popup(T.start, true); }, 1800);
+          setTimeout(function () { var st2 = window.__store && window.__store.getState(); if (st2 && st2.phase === "playing") popup(T.start, true); }, 1800);
           scheduleRandom();
         }
         if (s.phase === "over") {
           clearTimeout(randomTimer);
+          if (popEl) { clearTimeout(popTimer); popEl.style.opacity = "0"; }
           var isHigh = s.score > highAtStart && s.score > 0;
           if (s.endReason === "time") SFX.timeUp();
           if (isHigh) setTimeout(SFX.fanfare, 700);
