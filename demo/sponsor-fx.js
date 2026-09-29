@@ -59,7 +59,7 @@
     ".lbx-head{flex-wrap:wrap;row-gap:4px}",
     ".lbx-h{font-size:0!important;display:flex;align-items:center;gap:8px;flex:1 1 100%;min-width:0}",
     ".lbx-h::before{content:'';flex:none;width:22px;height:22px;border-radius:6px;background:url(\"" + ICON_URL.replace(/"/g, "%22") + "\") center/contain no-repeat;box-shadow:0 0 10px " + P + "}",
-    ".lbx-h::after{content:var(--sp-lb);font-size:15px;line-height:1.15;color:" + P + ";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+    ".lbx-h::after{content:var(--sp-lb);font-size:14px;line-height:1.2;color:" + P + ";white-space:normal}",
     ".lbx{border-color:color-mix(in srgb," + P + " 55%,transparent)!important;box-shadow:0 0 22px color-mix(in srgb," + P + " 18%,transparent)}",
     /* start button glow */
     ".z-20 button.h-14:not([disabled]){animation:spGlow 2.2s ease-in-out infinite}",
