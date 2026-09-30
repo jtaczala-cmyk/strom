@@ -30,7 +30,8 @@ The licence texts are also included as `fonts/OFL-IBMPlexSans.txt` and `fonts/OF
 Images: game graphics were created with Grok (xAI) – "Created with Grok".
 
 Online services: anonymous, cookie-free visit statistics via GoatCounter (goatcounter.com);
-the `count.js` script is served from this site, not from gc.zgo.at.
+the `count.js` script is served from this site, not from gc.zgo.at. Online leaderboard: Supabase
+(supabase.com, EU region, Ireland), accessed with plain `fetch` to its REST API; no Supabase library is loaded.
 
 "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
 

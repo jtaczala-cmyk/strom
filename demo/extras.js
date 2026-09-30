@@ -86,12 +86,13 @@
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function cleanName(n) { return String(n || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 16); }
 
-  /* ---------------- Leaderboard adapter ---------------- */
+  /* ---------------- Leaderboard adapter (online: Supabase REST, fallback: this device) ---------------- */
   var LB_CFG = window.LEADERBOARD_CONFIG || {};
   var SB_URL = String(LB_CFG.supabaseUrl || "").replace(/\/+$/, "");
   var SB_KEY = String(LB_CFG.supabaseKey || LB_CFG.supabasePublishableKey || LB_CFG.supabaseAnonKey || "");
   var ONLINE = !!(SB_URL && SB_KEY && /^https:\/\//.test(SB_URL));
   var LOCAL_KEY = "lb-local-" + GAME;
+  var MAX_SCORE = GAME === "strom-demo" ? 7500 : 6000, MAX_KO = 48;
 
   function localRows() {
     try { var r = JSON.parse(ls(LOCAL_KEY) || "[]"); return Array.isArray(r) ? r : []; } catch (e) { return []; }
@@ -114,6 +115,34 @@
     });
     return out.slice(0, 10);
   }
+  /* Client-side name check (the database checks the same and more). */
+  var NAME_RE = /^[0-9A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźżÆØÅæøåÄÖÜäöüÉÈÁéèáß][0-9A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźżÆØÅæøåÄÖÜäöüÉÈÁéèáß _.'-]*$/;
+  var BAD_SUB = ["kurw","chuj","pierdol","pierdal","jeban","jebac","jebie","zajeb","wyjeb","pizd","dziwk","szmat","kutas","cwel","ruchac",
+    "faen","fitte","fitta","hestkuk","jaevel","jaevla","fanden","rasshol","rasshul","drittsekk","neger",
+    "fuck","shit","cunt","bitch","pussy","whore","nigg","faggot","asshole","bastard","retard","hitler","penis","porn","twat","dildo","wanker"];
+  var BAD_WORD = ["huj","cipa","fiut","pedal","debil","dupa","ciota","murzyn","kuk","kukk","pikk","hore","javel","javla","soper",
+    "fuk","fck","dick","cock","fag","rape","rapist","ass","sex","cum","tits","slut","nazi","wank","kkk","heil"];
+  function norm(s) {
+    s = String(s).toLowerCase().replace(/æ/g, "ae").replace(/ß/g, "ss");
+    var F = "ąćęłńóśźżøåäöüéèêáàâíìîúùûýçñ0134578@$!|", T = "acelnoszzoaaoueeeaaaiiiuuuycnoieastbasii", o = "";
+    for (var i = 0; i < s.length; i++) { var j = F.indexOf(s[i]); o += j < 0 ? s[i] : T[j]; }
+    return o;
+  }
+  function dd(s) { return s.replace(/(.)\1+/g, "$1"); }
+  function nameBlocked(n) {
+    var x = norm(n), c = x.replace(/[^a-z]/g, ""), cd = dd(c);
+    var w = x.split(/[^a-z]+/).filter(Boolean), wd = w.map(dd);
+    for (var i = 0; i < BAD_SUB.length; i++) if (c.indexOf(BAD_SUB[i]) >= 0 || cd.indexOf(dd(BAD_SUB[i])) >= 0) return true;
+    for (var k = 0; k < BAD_WORD.length; k++) {
+      var b = BAD_WORD[k];
+      if (w.indexOf(b) >= 0 || wd.indexOf(dd(b)) >= 0 || c === b || cd === dd(b)) return true;
+    }
+    return false;
+  }
+  function onlineName(n) {
+    n = String(n || "").replace(/\s+/g, " ").trim();
+    return n.length >= 2 && n.length <= 16 && NAME_RE.test(n) && !/\s\s/.test(n) && !nameBlocked(n) ? n : "";
+  }
   function sbFetch(path, opts) {
     opts = opts || {};
     var h = { apikey: SB_KEY };
@@ -121,34 +150,40 @@
     if (opts.body) { h["Content-Type"] = "application/json"; h.Prefer = "return=minimal"; }
     var ctl = typeof AbortController !== "undefined" ? new AbortController() : null;
     var timer = ctl ? setTimeout(function () { ctl.abort(); }, 7000) : null;
-    return fetch(SB_URL + "/rest/v1/" + path, { method: opts.method || "GET", headers: h, body: opts.body, signal: ctl ? ctl.signal : undefined })
+    return fetch(SB_URL + "/rest/v1/" + path, { method: opts.method || "GET", headers: h, body: opts.body, signal: ctl ? ctl.signal : undefined, credentials: "omit", referrerPolicy: "no-referrer" })
       .then(function (res) {
         if (timer) clearTimeout(timer);
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.status === 204 || opts.body ? null : res.json();
-      });
+      }, function (e) { if (timer) clearTimeout(timer); throw e; });
   }
   var lb = {
     online: ONLINE,
     game: GAME,
     list: function () {
-      if (!ONLINE) return Promise.resolve(top10(localRows()));
-      return sbFetch("scores?select=id,name,score,kills&game=eq." + GAME + "&order=score.desc,created_at.asc&limit=60")
+      if (!ONLINE) { lb.online = false; return Promise.resolve(top10(localRows())); }
+      return sbFetch("scores?select=id,name,score,ko&game=eq." + encodeURIComponent(GAME) + "&order=score.desc,created_at.asc&limit=100")
         .then(function (rows) {
-          return top10((rows || []).map(function (r) { return { id: r.id, name: r.name, score: r.score, kills: r.kills || 0 }; }));
+          lb.online = true;
+          return top10((rows || []).map(function (r) { return { id: r.id, name: r.name, score: r.score, kills: r.ko || 0 }; }));
         })
-        .catch(function () { return top10(localRows()); });
+        .catch(function () { lb.online = false; return top10(localRows()); });
     },
     submit: function (d) {
       d = d || {};
       var row = { name: cleanName(d.name), score: Math.max(0, Math.floor(+d.score || 0)), kills: Math.max(0, Math.floor(+d.kills || 0)) };
       if (!row.name) return lb.list();
       localAdd(row);
-      if (!ONLINE) return lb.list();
-      return sbFetch("scores", { method: "POST", body: JSON.stringify({ game: GAME, name: row.name, score: row.score, kills: row.kills }) })
-        .catch(function () { /* keep local copy */ })
+      var nm = onlineName(row.name);
+      if (!ONLINE || !nm || row.score > MAX_SCORE || row.kills > MAX_KO) return lb.list();
+      var st = window.__store && window.__store.getState && window.__store.getState();
+      var body = { game: GAME, name: nm, score: row.score, ko: row.kills };
+      if (st && typeof st.wave === "number" && st.wave >= 0 && st.wave <= 6) body.wave = Math.floor(st.wave);
+      return sbFetch("scores", { method: "POST", body: JSON.stringify(body) })
+        .catch(function () { /* offline / rejected: the local copy is kept */ })
         .then(function () { return lb.list(); });
     },
+    nameOk: onlineName,
   };
   window.__lb = lb;
 
