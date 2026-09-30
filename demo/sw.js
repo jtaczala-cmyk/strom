@@ -1,4 +1,4 @@
-const CACHE = "strom-demo-v1";
+const CACHE = "strom-demo-v3";
 const BASE = "/strom/demo/";
 const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "config.js", BASE + "sponsor.js", BASE + "sponsor-fx.js"];
 
