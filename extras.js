@@ -68,7 +68,7 @@
    "Tips: hjelmen skal på hodet, ikke på albuen.",
    "Tips: vet du ikke hva du skal gjøre? Bær en planke. Da ser du alltid travel ut.",
    "Tips: «snarest» betyr i går.",
-   "Tips: frakoble først, heltemot etterpå.",
+   "Tips: frakoble, sikre mot gjeninnkobling og kontroller spenningsløshet først. Heltemot etterpå.",
    "Tips: mål to ganger, kapp én gang, skyld på tegningene."
   ]
  }
@@ -395,7 +395,13 @@
     if (!el || !document.body.contains(el)) {
       el = document.createElement("p");
       el.id = "legal-foot";
-      el.textContent = FOOT;
+      el.textContent = FOOT + " \u00b7 ";
+      var a = document.createElement("a");
+      a.id = "legal-priv"; a.href = "/strom/personvern/"; a.textContent = "Personvern";
+      a.style.cssText = "color:inherit;text-decoration:underline;text-underline-offset:2px;pointer-events:auto;padding:4px 2px;margin:-4px -2px";
+      el.appendChild(a);
+      el.appendChild(document.createElement("br"));
+      var g = document.createElement("span"); g.textContent = "Created with Grok"; el.appendChild(g);
       el.style.cssText = "position:fixed;left:0;right:0;bottom:0;margin:0;padding:3px 8px calc(env(safe-area-inset-bottom,0px) + 3px);background:linear-gradient(to top,rgba(18,17,15,.92),rgba(18,17,15,.72));z-index:55;text-align:center;font:400 10px/1.2 'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.02em;color:rgba(245,241,232,.55);pointer-events:none;user-select:none";
       document.body.appendChild(el);
     }

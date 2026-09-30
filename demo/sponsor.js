@@ -31,10 +31,10 @@ window.SPONSOR = {
   kitName: "Sponsor-verktøykasse",
   kitBonus: 250,
   tips: [
-    "Bruk alltid spenningstester før du tar i noe – også når «den er sikkert frakoblet».",
+    "Bruk alltid spenningstester før du tar i noe – også når «den er sikkert frakoblet». Test testeren før og etter.",
     "Merk kursene i sikringsskapet. Framtidige deg sier takk.",
     "Riktig verktøy halverer jobben. Feil verktøy dobler den – og kaffepausen.",
-    "Jordfeilbryter er billigere enn ambulanse.",
+    "Jordfeilbryter er billigere enn ambulanse – men den beskytter ikke mot alt.",
     "Sjekk at kabelen er dimensjonert for lasten – ikke for budsjettet.",
     "Lås og merk før du jobber. Alltid. Også på fredag kl. 15.25."
   ]
