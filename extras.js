@@ -92,6 +92,7 @@
   var SB_KEY = String(LB_CFG.supabaseKey || LB_CFG.supabasePublishableKey || LB_CFG.supabaseAnonKey || "");
   var ONLINE = !!(SB_URL && SB_KEY && /^https:\/\//.test(SB_URL));
   var LOCAL_KEY = "lb-local-" + GAME;
+  function optedOut() { return ls("lb-online-off") === "1"; } /* player unticked "show my score online" */
   var MAX_SCORE = GAME === "strom-demo" ? 7500 : 6000, MAX_KO = 48;
 
   function localRows() {
@@ -175,7 +176,7 @@
       if (!row.name) return lb.list();
       localAdd(row);
       var nm = onlineName(row.name);
-      if (!ONLINE || !nm || row.score > MAX_SCORE || row.kills > MAX_KO) return lb.list();
+      if (!ONLINE || optedOut() || !nm || row.score > MAX_SCORE || row.kills > MAX_KO) return lb.list();
       var st = window.__store && window.__store.getState && window.__store.getState();
       var body = { game: GAME, name: nm, score: row.score, ko: row.kills };
       if (st && typeof st.wave === "number" && st.wave >= 0 && st.wave <= 6) body.wave = Math.floor(st.wave);
@@ -476,3 +477,39 @@
   var go = function () { setTimeout(function () { tick(); setInterval(tick, 700); }, 1200); };
   if (document.readyState === "complete") go(); else window.addEventListener("load", go);
 })();
+/* ---- leaderboard notice (privacy, 2026-09-30) ---- */
+(function () {
+  "use strict";
+  var TXT = "Kallenavnet og resultatet vises på den offentlige topplisten på nett. Ikke bruk fullt navn eller e-post.", LINK = "Personvern", BOX = "Vis resultatet mitt på topplisten på nett", HREF = "/strom/personvern/", KEY = "lb-online-off";
+  function on() { return !!(window.__lb && window.__lb.online !== undefined && (window.LEADERBOARD_CONFIG || {}).supabaseUrl); }
+  function tick() {
+    if (!on()) return;
+    document.querySelectorAll('input[maxlength="16"]').forEach(function (inp) {
+      var lab = inp.closest("label") || inp;
+      var nx = lab.nextElementSibling;
+      if (nx && nx.classList && nx.classList.contains("lb-note")) return;
+      var d = document.createElement("div");
+      d.className = "lb-note";
+      d.style.cssText = "width:100%;max-width:24rem;margin:-2px 0 0;font:400 11px/1.4 'IBM Plex Sans',system-ui,sans-serif;color:#a8a29e;text-align:left";
+      var p = document.createElement("p"); p.style.margin = "0";
+      p.appendChild(document.createTextNode(TXT + " "));
+      var a = document.createElement("a"); a.href = HREF; a.textContent = LINK;
+      a.style.cssText = "color:#2dd4bf;text-decoration:underline;text-underline-offset:2px";
+      p.appendChild(a); d.appendChild(p);
+      var l = document.createElement("label");
+      l.style.cssText = "display:flex;align-items:center;gap:6px;margin-top:4px;cursor:pointer";
+      var c = document.createElement("input"); c.type = "checkbox"; c.className = "lb-opt";
+      var off = false; try { off = window.localStorage.getItem(KEY) === "1"; } catch (e) {}
+      c.checked = !off; c.style.cssText = "width:15px;height:15px;accent-color:#2dd4bf;margin:0";
+      c.addEventListener("change", function () {
+        try { window.localStorage.setItem(KEY, c.checked ? "0" : "1"); } catch (e) {}
+        document.querySelectorAll(".lb-opt").forEach(function (o) { o.checked = c.checked; });
+      });
+      l.appendChild(c); l.appendChild(document.createTextNode(BOX)); d.appendChild(l);
+      lab.after(d);
+    });
+  }
+  var st = function () { tick(); setInterval(tick, 600); };
+  if (document.readyState === "complete") setTimeout(st, 300); else window.addEventListener("load", function () { setTimeout(st, 300); });
+})();
+/* ---- end leaderboard notice ---- */

@@ -13,7 +13,8 @@ nothing is loaded from gc.zgo.at. The only external request is the hit sent to
 - one page view per visit (path `/prad/`, `/power/`, `/strom/`, `/strom/demo/`),
 - events `<game>-start` (a round starts) and `<game>-finish` (game-over screen).
 
-GoatCounter sets no cookies and stores no IP address or personal data, so no cookie banner is
-needed. The privacy pages (`/prad/prywatnosc/`, `/power/privacy/`, `/strom/personvern/`,
+GoatCounter sets no cookies, stores nothing in the browser and stores no IP address or personal data
+(IP + user agent are only kept in memory for up to 8 hours to count unique visits), so no cookie banner is
+needed. Legal basis given on the privacy pages: legitimate interest, Art. 6(1)(f) GDPR. The privacy pages (`/prad/prywatnosc/`, `/power/privacy/`, `/strom/personvern/`,
 `/strom/demo/personvern/`) describe this. To turn it off, set the code to `""` in `config.js`.
 To update `count.js`, download the new version from https://gc.zgo.at/count.js.
