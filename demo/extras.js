@@ -1,3 +1,7 @@
+/*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
+ *  Proprietary and not open source: no copying, modification, distribution or commercial use
+ *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE.
+ *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
 /* Extras for the game: leaderboard adapter, sound/vibration, mute toggle, humor.
    Plain classic script, loaded in <head> before the app bundle. */
 (function () {
@@ -378,4 +382,56 @@
   // Wait for hydration before touching the DOM.
   var start = function () { setTimeout(function () { tick(); setInterval(tick, 700); }, 1200); };
   if (document.readyState === "complete") start(); else window.addEventListener("load", start);
+})();
+
+/* ---- legal footer + optional cookie-free analytics (added 2026-09-30) ---- */
+(function () {
+  "use strict";
+  var FOOT = "© 2026 Jacek Taczała · Alle rettigheter forbeholdt";
+  function phase() { var s = window.__store && window.__store.getState && window.__store.getState(); return s && s.phase; }
+  var el = null;
+  function foot() {
+    if (!document.body) return;
+    if (!el || !document.body.contains(el)) {
+      el = document.createElement("p");
+      el.id = "legal-foot";
+      el.textContent = FOOT;
+      el.style.cssText = "position:fixed;left:0;right:0;bottom:0;margin:0;padding:3px 8px calc(env(safe-area-inset-bottom,0px) + 3px);background:linear-gradient(to top,rgba(18,17,15,.92),rgba(18,17,15,.72));z-index:9001;text-align:center;font:400 10px/1.2 'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.02em;color:rgba(245,241,232,.55);pointer-events:none;user-select:none";
+      document.body.appendChild(el);
+    }
+    var p = phase();
+    el.style.display = (p === "playing" || p === "paused" || p === "over") ? "none" : "block";
+  }
+  /* Analytics: off unless window.ANALYTICS_CONFIG.goatcounter (config.js) holds a GoatCounter code. */
+  var A = window.ANALYTICS_CONFIG || {};
+  var GC = String(A.goatcounter || "").trim().toLowerCase();
+  var GAME = (function () { var m = location.pathname.match(/^\/([^/]+(?:\/demo)?)\//); return m ? m[1].replace("/", "-") : "game"; })();
+  var on = /^[a-z0-9][a-z0-9-]{1,49}$/.test(GC);
+  if (on) {
+    var s = document.createElement("script");
+    s.async = true; s.src = "https://gc.zgo.at/count.js";
+    s.setAttribute("data-goatcounter", "https://" + GC + ".goatcounter.com/count");
+    (document.head || document.documentElement).appendChild(s);
+  }
+  function ev(name) {
+    if (!on) return;
+    try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: GAME + "-" + name, title: GAME + " " + name, event: true }); } catch (e) {}
+  }
+  window.__track = ev;
+  var hooked = false, last;
+  function tick() {
+    foot();
+    var st = window.__store;
+    if (!hooked && st && st.subscribe) {
+      hooked = true; last = st.getState().phase;
+      st.subscribe(function (x) {
+        if (x.phase === last) return;
+        var prev = last; last = x.phase; foot();
+        if (x.phase === "playing" && prev !== "paused") ev("start");
+        if (x.phase === "over") ev("finish");
+      });
+    }
+  }
+  var go = function () { setTimeout(function () { tick(); setInterval(tick, 700); }, 1200); };
+  if (document.readyState === "complete") go(); else window.addEventListener("load", go);
 })();
