@@ -21,38 +21,38 @@
   "soundOff": "Lyd av",
   "start": "Ett minutt. Sjefen teller.",
   "random": [
-   "Sjefen: dette skulle vært ferdig i går!",
-   "Tomt for materialer! Grossisten åpner på mandag.",
-   "Noen har «lånt» drillen min igjen …",
-   "Verneombudet er her. Se ut som du følger planen.",
-   "Hvem lot denne kabelen stå strømførende?!",
-   "Basen: ser vater nok ut for meg.",
-   "Betongbilen venter ikke på noen!",
-   "Tegningene er endret. Igjen.",
-   "«Det har alltid vært sånn.» – forrige gjeng",
-   "Snart matpause. Kanskje.",
-   "Hvem flyttet stillaset?",
-   "Leveransen skulle komme kl. 07.00. Nå er klokka 11.30."
+   "Regel 1: frakoble – fra alle steder anlegget kan få spenning.",
+   "Regel 2: sikre mot innkobling – lås og merk.",
+   "Regel 3: kontroller at anlegget er spenningsløst – alle faser.",
+   "Regel 4: jord og kortslutt – alltid i høyspenning, i lavspenning etter risikovurdering.",
+   "Regel 5: beskytt mot spenningssatte deler nær arbeidsstedet.",
+   "Hver jobb har en utpekt ansvarlig for arbeidet (AFA) eller leder for sikkerhet (LFS).",
+   "Før jobben: risikovurdering og sikker jobbanalyse (SJA).",
+   "Test spenningstesteren rett før og rett etter bruk.",
+   "Kan det frakobles? Jobb spenningsløst. AUS krever egen opplæring og prosedyre.",
+   "Kan det ikke gjøres sikkert? Stopp jobben og si fra.",
+   "Meld avvik og nestenulykker – hver gang.",
+   "Før innkobling: varsle alle, fjern jordingen, alle ut av anlegget."
   ],
   "hurt": [
-   "Au! Det sto ikke i SJA-en.",
-   "Spenningstesteren sier: strømførende. Det er deg.",
-   "Strømmen tilgir ikke. Ikke sjefen heller."
+   "Strømulykke? Bryt strømmen før du tar i den skadde.",
+   "Puster ikke? Ring 113 og start HLR.",
+   "Strøm gjennom kroppen? Alltid til lege – og meld elulykken til DSB."
   ],
   "medkit": [
-   "Førstehjelpsskrin! Plaster fikser alt.",
-   "HMS-ansvarlig ville vært stolt."
+   "Førstehjelp ved strømulykker skal øves hvert år.",
+   "Før jobben: vit hvor førstehjelpsutstyr og hjertestarter er."
   ],
   "tool": [
-   "Nytt verktøy! Du får det tilbake på fredag. Kanskje.",
-   "Den som finner, får beholde. Byggeplassregel."
+   "Nytt verktøy? Sjekk isolasjonen og at det passer spenningen.",
+   "Spenningstester etter NEK EN 61243-3 – ikke et vanlig multimeter."
   ],
   "armor": [
-   "Hjelmen på. Nå kan mor sove godt i natt."
+   "Verneutstyr etter risikovurdering – også mot lysbue."
   ],
   "coffee": [
-   "Kaffe fra termosen. +10 motivasjon.",
-   "Uten kaffe, ingen byggeplass."
+   "Pause er også HMS: trøtthet gir feil.",
+   "Tilbake fra pause? Sjekk at sikkerhetstiltakene fortsatt er på plass."
   ],
   "titles": [
    "Lærling med kost",
@@ -62,14 +62,14 @@
    "Legenden i sikringsskapet"
   ],
   "titleLabel": "Tittelen din:",
-  "newHigh": "ny rekord! Sjefen smilte nesten.",
+  "newHigh": "ny rekord! På jobb: sikkerhet før tempo.",
   "tips": [
-   "Tips: en strømførende kabel biter ikke. Den sparker.",
-   "Tips: hjelmen skal på hodet, ikke på albuen.",
-   "Tips: vet du ikke hva du skal gjøre? Bær en planke. Da ser du alltid travel ut.",
-   "Tips: «snarest» betyr i går.",
-   "Tips: frakoble, sikre mot gjeninnkobling og kontroller spenningsløshet først. Heltemot etterpå.",
-   "Tips: mål to ganger, kapp én gang, skyld på tegningene."
+   "Prinsipp: de fem sikkerhetsreglene – frakoble, sikre mot innkobling, kontrollere spenningsløshet, jorde og kortslutte, beskytte mot spenningssatte deler nær arbeidsstedet.",
+   "Prinsipp: alltid minst to sikkerhetsbarrierer – svikter én, skal den andre fortsatt beskytte deg fullt ut.",
+   "Prinsipp: klare roller – driftsansvarlig for anlegget, ansvarlig for arbeidet (AFA) eller leder for sikkerhet (LFS) for jobben.",
+   "Prinsipp: før arbeidet – innhent opplysninger om anlegget, gjør risikovurdering og SJA.",
+   "Prinsipp: test spenningstesteren rett før og rett etter spenningskontrollen.",
+   "Spillet erstatter ikke FSE-kurset. FSE- og førstehjelpsopplæring hvert år (maks 12 måneder mellom)."
   ]
  }
 };
@@ -257,7 +257,7 @@
   }
   function popup(text, force) {
     var now = Date.now();
-    if (!force && now - lastPop < 4000) return;
+    if (!force && now - lastPop < 4000) return; if (!force && now < (window.__smBusyUntil || 0)) return; if (!force && now < (window.__smBusyUntil || 0)) return;
     lastPop = now;
     var el = ensurePop();
     el.textContent = text;
@@ -265,7 +265,7 @@
     el.style.transform = "translate(-50%,0)";
     SFX.pop();
     clearTimeout(popTimer);
-    popTimer = setTimeout(function () { el.style.opacity = "0"; el.style.transform = "translate(-50%,-8px)"; }, 2800);
+    popTimer = setTimeout(function () { el.style.opacity = "0"; el.style.transform = "translate(-50%,-8px)"; }, Math.min(6000, 2800 + Math.max(0, String(text).length - 40) * 45));
   }
   window.__extrasPopup = popup;
 
@@ -350,7 +350,7 @@
     clearTimeout(randomTimer);
     randomTimer = setTimeout(function () {
       var st = window.__store && window.__store.getState();
-      if (st && st.phase === "playing") popup(pick(T.random));
+      if (false) popup(pick(T.random));
       scheduleRandom();
     }, 11000 + Math.random() * 7000);
   }
@@ -513,3 +513,96 @@
   if (document.readyState === "complete") setTimeout(st, 300); else window.addEventListener("load", function () { setTimeout(st, 300); });
 })();
 /* ---- end leaderboard notice ---- */
+/* safety-maxims: 4 animated FSE/HMS principles per round + "learned" list on the game-over card */
+(function () {
+  var CFGM = {"game": "strom-demo", "list": ["Regel 1: frakoble – fra alle steder anlegget kan få spenning.", "Regel 2: sikre mot innkobling – lås og merk.", "Regel 3: kontroller at anlegget er spenningsløst – alle faser.", "Regel 4: jord og kortslutt – alltid i høyspenning, i lavspenning etter risikovurdering.", "Regel 5: beskytt mot spenningssatte deler nær arbeidsstedet.", "Hver jobb har en utpekt ansvarlig for arbeidet (AFA) eller leder for sikkerhet (LFS).", "Før jobben: risikovurdering og sikker jobbanalyse (SJA).", "Test spenningstesteren rett før og rett etter bruk.", "Kan det frakobles? Jobb spenningsløst. AUS krever egen opplæring og prosedyre.", "Kan det ikke gjøres sikkert? Stopp jobben og si fra.", "Meld avvik og nestenulykker – hver gang.", "Før innkobling: varsle alle, fjern jordingen, alle ut av anlegget."], "icons": ["⚡", "🔒", "🔍", "⚡", "🛡️", "👷", "📝", "🔎", "🔌", "✋", "📣", "⚠️"], "ui": {"kicker": "Sikkerhetsprinsipp · FSE", "learned": "I dag lærte du:", "progress": "Du kan {n} av {t} prinsipper. Spill videre for å lære alle.", "done": "Du har sett alle {t} prinsippene. Neste runder repeterer dem.", "note": "Dette erstatter ikke FSE-kurset."}};
+  var L = CFGM.list, U = CFGM.ui, KEY = CFGM.game + "-maxims-v1", AT = [54, 41, 28, 15], SHOW = 4800;
+  function st() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function save(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+  var css = document.createElement("style");
+  css.textContent = "#sm-ban{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 172px);z-index:61;width:min(92vw,380px);box-sizing:border-box;display:flex;gap:10px;align-items:flex-start;padding:10px 12px 11px;border-radius:14px;background:linear-gradient(135deg,rgba(20,24,22,.9),rgba(12,14,13,.9));border:1.5px solid #facc15;box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.4);color:#f5f1e8;pointer-events:none;opacity:0;transform:translate(-50%,-14px) scale(.96);transition:opacity .35s ease,transform .45s cubic-bezier(.2,1.4,.4,1);overflow:hidden}" +
+    "#sm-ban.on{opacity:1;transform:translate(-50%,0) scale(1)}" +
+    "#sm-ban .i{flex:0 0 34px;height:34px;border-radius:9px;background:#facc15;color:#1c1917;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;animation:smPulse 1.2s ease-in-out 2}" +
+    "#sm-ban .k{font:600 10.5px/1.2 'Oswald','IBM Plex Sans',system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#facc15;margin:1px 0 3px}" +
+    "#sm-ban .t{font:600 14.5px/1.35 'IBM Plex Sans',system-ui,sans-serif;margin:0}" +
+    "#sm-ban .bar{position:absolute;left:0;bottom:0;height:3px;background:#facc15;width:100%;transform-origin:left;transform:scaleX(1)}" +
+    "#sm-ban.on .bar{transition:transform " + (SHOW / 1000) + "s linear;transform:scaleX(0)}" +
+    "@keyframes smPulse{50%{transform:scale(1.12)}}" +
+    ".sm-learn{margin:.6rem 0 0;padding:9px 11px;border-radius:12px;border:1px solid rgba(250,204,21,.5);background:rgba(250,204,21,.07);text-align:left}" +
+    ".sm-learn h3{margin:0 0 5px;font:600 12px/1.2 'Oswald','IBM Plex Sans',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#facc15}" +
+    ".sm-learn ul{margin:0;padding:0 0 0 1.05em;font:400 12.5px/1.4 'IBM Plex Sans',system-ui,sans-serif;color:#e7e5e4}" +
+    ".sm-learn li{margin:0 0 3px}.sm-learn p{margin:5px 0 0;font:400 11px/1.35 'IBM Plex Sans',system-ui,sans-serif;color:#a8a29e}" +
+    "@media (prefers-reduced-motion:reduce){#sm-ban,#sm-ban.on{transition:opacity .2s}#sm-ban .i{animation:none}}";
+  (document.head || document.documentElement).appendChild(css);
+  var ban = null, hideT = 0, round = null;
+  function el() {
+    if (ban && document.body.contains(ban)) return ban;
+    ban = document.createElement("div"); ban.id = "sm-ban"; ban.setAttribute("role", "status"); ban.setAttribute("aria-live", "polite");
+    ban.innerHTML = '<div class="i" aria-hidden="true">\u26A1</div><div><p class="k"></p><p class="t"></p></div><div class="bar"></div>';
+    document.body.appendChild(ban); return ban;
+  }
+  function show(i, n) {
+    var b = el(); b.classList.remove("on"); void b.offsetWidth;
+    b.querySelector(".k").textContent = U.kicker + " \u00B7 " + (i + 1) + "/" + L.length;
+    b.querySelector(".t").textContent = L[i];
+    b.querySelector(".i").textContent = CFGM.icons[i] || "\u26A1";
+    requestAnimationFrame(function () { b.classList.add("on"); });
+    // keep the joke/context pop-up out of the way while a principle is on screen
+    var p = document.getElementById("extras-pop"); if (p) p.style.opacity = "0";
+    window.__smBusyUntil = Date.now() + SHOW + 400;
+    clearTimeout(hideT); hideT = setTimeout(hide, SHOW);
+  }
+  function hide() { if (ban) ban.classList.remove("on"); }
+  function startRound() {
+    var s = st(), idx = (s.next || 0) % L.length, pick = [];
+    for (var k = 0; k < AT.length; k++) pick.push((idx + k) % L.length);
+    round = { pick: pick, shown: [], step: 0, pending: false };
+  }
+  function tick(s) {
+    if (!round || s.phase !== "playing") return;
+    if (round.step >= round.pick.length) return;
+    var t = typeof s.timeLeft === "number" ? s.timeLeft : 60;
+    if (t <= AT[round.step] && (!s.banner || t <= AT[round.step] - 3)) {
+      var i = round.pick[round.step++]; round.shown.push(i); show(i, round.step);
+      var o = st(); o.seen = o.seen || []; if (o.seen.indexOf(i) < 0) o.seen.push(i); o.next = (i + 1) % L.length; save(o);
+    }
+  }
+  function learned() {
+    if (!round || !round.shown.length) return;
+    var shown = round.shown.slice(), tries = 0;
+    (function attempt() {
+      var card = null;
+      document.querySelectorAll(".z-30").forEach(function (c) { if (!card && /\d/.test(c.textContent || "") && c.querySelector("button")) card = c; });
+      var anchor = card && (card.querySelector(".extras-title") || card.querySelector("h2") || card.querySelector("h1"));
+      if (!anchor || !card.querySelector(".extras-title")) { if (tries++ < 40) setTimeout(attempt, 100); return; }
+      if (card.querySelector(".sm-learn")) return;
+      var d = document.createElement("div"); d.className = "sm-learn";
+      var h = document.createElement("h3"); h.textContent = U.learned; d.appendChild(h);
+      var ul = document.createElement("ul");
+      shown.forEach(function (i) { var li = document.createElement("li"); li.textContent = L[i]; ul.appendChild(li); });
+      d.appendChild(ul);
+      var n = (st().seen || []).length, p = document.createElement("p");
+      p.textContent = (n >= L.length ? U.done : U.progress).replace("{n}", n).replace("{t}", L.length) + " " + U.note;
+      d.appendChild(p);
+      anchor.after(d);
+    })();
+  }
+  var hooked = false, prevPhase = null;
+  (function wait() {
+    var store = window.__store;
+    if (!store) { setTimeout(wait, 300); return; }
+    if (hooked) return; hooked = true;
+    prevPhase = store.getState().phase;
+    store.subscribe(function (s) {
+      if (s.phase !== prevPhase) {
+        if (s.phase === "playing" && prevPhase !== "paused") startRound();
+        if (s.phase === "over") { clearTimeout(hideT); hide(); learned(); }
+        if (s.phase !== "playing" && s.phase !== "paused") { if (s.phase !== "over") { hide(); } }
+        if (s.phase === "paused") hide();
+        prevPhase = s.phase;
+      }
+      tick(s);
+    });
+  })();
+})();
+/* end safety-maxims */

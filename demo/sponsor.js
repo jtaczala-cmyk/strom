@@ -31,11 +31,11 @@ window.SPONSOR = {
   kitName: "Sponsor-verktøykasse",
   kitBonus: 250,
   tips: [
-    "Bruk alltid spenningstester før du tar i noe – også når «den er sikkert frakoblet». Test testeren før og etter.",
-    "Merk kursene i sikringsskapet. Framtidige deg sier takk.",
-    "Riktig verktøy halverer jobben. Feil verktøy dobler den – og kaffepausen.",
-    "Jordfeilbryter er billigere enn ambulanse – men den beskytter ikke mot alt.",
-    "Sjekk at kabelen er dimensjonert for lasten – ikke for budsjettet.",
-    "Lås og merk før du jobber. Alltid. Også på fredag kl. 15.25."
+    "Bruk spenningstester etter NEK EN 61243 – og test den rett før og rett etter spenningskontrollen.",
+    "Frakoble, sikre mot innkobling og kontroller spenningsløshet – før du tar i noe.",
+    "Lås og merk på alle frakoblingssteder. Egen hengelås, egen nøkkel.",
+    "Alltid minst to sikkerhetsbarrierer mellom deg og spenningen.",
+    "Verneutstyr etter risikovurderingen – også mot lysbue.",
+    "Ved strømulykke: bryt strømmen, ring 113, start HLR – og meld elulykken til DSB."
   ]
 };

@@ -228,7 +228,7 @@
       var btn = card && card.querySelector("button");
       if (!btn) { if (tries++ < 40) setTimeout(attempt, 100); return; }
       if (card.querySelector(".sp-tip")) return;
-      var tips = S.tips && S.tips.length ? S.tips : ["Riktig verktøy halverer jobben."];
+      var tips = S.tips && S.tips.length ? S.tips : ["Frakoblet, sikret og kontrollert – før du tar i noe."];
       var d = document.createElement("div"); d.className = "sp-tip";
       d.innerHTML = '<div class="sp-tip-h">' + iconImg(36) + '<div>Dagens tips levert av<b>' + esc(NAME) + '</b></div></div><p>' + esc(tips[tipI++ % tips.length]) + '</p>' + (EX ? '<small>' + esc(EXL) + ' · demo – ingen ekte bedrift</small>' : '');
       btn.parentElement.insertBefore(d, btn);
