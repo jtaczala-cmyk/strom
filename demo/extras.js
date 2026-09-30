@@ -415,7 +415,7 @@
   var on = /^[a-z0-9][a-z0-9-]{1,49}$/.test(GC);
   if (on) {
     var s = document.createElement("script");
-    s.async = true; s.src = "https://gc.zgo.at/count.js";
+    s.async = true; s.src = "/" + GAME.replace("-demo", "/demo") + "/count.js"; /* self-hosted copy of GoatCounter count.js (ISC) */
     s.setAttribute("data-goatcounter", "https://" + GC + ".goatcounter.com/count");
     (document.head || document.documentElement).appendChild(s);
   }

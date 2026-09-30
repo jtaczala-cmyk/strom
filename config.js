@@ -11,4 +11,4 @@ window.LEADERBOARD_CONFIG = {
 
 /* Cookie-free analytics (GoatCounter). Disabled while empty. To enable, put your GoatCounter
    site code here, e.g. "jtaczala-games" for https://jtaczala-games.goatcounter.com  (see ANALYTICS.md). */
-window.ANALYTICS_CONFIG = { goatcounter: "" };
+window.ANALYTICS_CONFIG = { goatcounter: "jtaczala-games" };

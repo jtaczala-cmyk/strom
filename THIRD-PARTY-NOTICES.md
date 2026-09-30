@@ -15,6 +15,7 @@ under their own licences. Those licences permit commercial use provided this not
 | Tailwind CSS | 4.3.3 | MIT | © Tailwind Labs, Inc. |
 | Lucide icons | – | ISC | © Lucide Contributors (parts © Cole Bemis, Feather, MIT) |
 | node-qrcode (STRØM bundle only) | – | MIT | © Ryan Day |
+| GoatCounter `count.js` (self-hosted, unmodified, file `count.js`) | 2026-09 | ISC | © Martin Tournoij |
 
 Fonts (self-hosted in `fonts/`: unmodified WOFF2 files, latin + latin-ext subsets, as distributed by
 Google Fonts; no requests to Google are made at runtime):
@@ -27,6 +28,9 @@ Google Fonts; no requests to Google are made at runtime):
 The licence texts are also included as `fonts/OFL-IBMPlexSans.txt` and `fonts/OFL-Oswald.txt`.
 
 Images: game graphics were created with Grok (xAI) – "Created with Grok".
+
+Online services: anonymous, cookie-free visit statistics via GoatCounter (goatcounter.com);
+the `count.js` script is served from this site, not from gc.zgo.at.
 
 "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
 
@@ -47,7 +51,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## ISC License (Lucide)
+## ISC License (Lucide, GoatCounter count.js)
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without
 fee is hereby granted, provided that the above copyright notice and this permission notice appear

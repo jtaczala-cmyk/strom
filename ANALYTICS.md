@@ -1,19 +1,19 @@
-# Analytics (disabled by default)
+# Analytics (GoatCounter – enabled)
 
-The game contains a cookie-free GoatCounter hook in `extras.js`. It does nothing until a site code
-is set in `config.js`:
+The game counts visits with GoatCounter, cookie-free and anonymous. Site code in `config.js`:
 
 ```js
-window.ANALYTICS_CONFIG = { goatcounter: "" };          // off
-window.ANALYTICS_CONFIG = { goatcounter: "jtaczala-games" }; // on -> https://jtaczala-games.goatcounter.com
+window.ANALYTICS_CONFIG = { goatcounter: "jtaczala-games" };  // on  -> https://jtaczala-games.goatcounter.com
+window.ANALYTICS_CONFIG = { goatcounter: "" };                // off
 ```
 
-When enabled it loads `https://gc.zgo.at/count.js` and records:
+`count.js` is self-hosted (unmodified copy of https://gc.zgo.at/count.js, ISC licence, in the repo root);
+nothing is loaded from gc.zgo.at. The only external request is the hit sent to
+`https://jtaczala-games.goatcounter.com/count`. It records:
 - one page view per visit (path `/prad/`, `/power/`, `/strom/`, `/strom/demo/`),
 - events `<game>-start` (a round starts) and `<game>-finish` (game-over screen).
 
 GoatCounter sets no cookies and stores no IP address or personal data, so no cookie banner is
-needed. One GoatCounter site can be shared by all games (they are separated by path/event name).
-
-To enable: create a free account at https://www.goatcounter.com/signup with the code you chose,
-put that code in `config.js` of each repo (and `strom/demo/config.js` if wanted), commit and push.
+needed. The privacy pages (`/prad/prywatnosc/`, `/power/privacy/`, `/strom/personvern/`,
+`/strom/demo/personvern/`) describe this. To turn it off, set the code to `""` in `config.js`.
+To update `count.js`, download the new version from https://gc.zgo.at/count.js.
