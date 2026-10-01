@@ -12,7 +12,25 @@
   "use strict";
   var CFG = {"slogans": [{"t": "113 – ambulanse", "k": "amb", "e": "🚑"}, {"t": "Lås og merk", "k": "lock", "e": "🔒"}, {"t": "Mål før du tar", "k": "meter", "e": "🔎"}, {"t": "Verneutstyr på", "k": "helmet", "e": "⛑️"}, {"t": "SJA – risikovurdering", "k": "sja", "e": "📋"}, {"t": "110 brann", "k": "fire", "e": "🚒"}, {"t": "Stopp ved tvil", "k": "stop", "e": "🛑"}, {"t": "Frakoble – sikre – verifisere", "k": "steps", "e": "🔌"}, {"t": "112 politi", "k": "police", "e": "🚓"}, {"t": "Hjertestarter – vit hvor", "k": "aed", "e": "❤️"}, {"t": "RUH – meld fra", "k": "ruh", "e": "📣"}, {"t": "Test testeren før/etter", "k": "test", "e": "✅"}, {"t": "Avstand til spenning", "k": "dist", "e": "⚡"}, {"t": "Strømulykke? Bryt strømmen", "k": "breaker", "e": "🔌"}, {"t": "Jord og kortslutt", "k": "ground", "e": "🔗"}, {"t": "Førstehjelp – øv årlig", "k": "generic", "e": "🩹"}], "ui": {"learned": "I dag lærte du:", "progress": "Du har sett {n} av {t} huskeregler. Spill videre for å se alle.", "done": "Du har sett alle {t} huskereglene. Neste runder repeterer dem.", "note": "Dette erstatter ikke FSE-kurset."}};
   var L = CFG.slogans, U = CFG.ui, KEY = "strom-demo-slogans-v1";
-  var reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var mqR = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)"), reduced = !!(mqR && mqR.matches);
+  try { mqR.addEventListener("change", function () { reduced = mqR.matches; }); } catch (e) {}
+  /* touch vs desktop (for hints) + WebP support probe (game map falls back to .jpg if WebP can't be decoded) */
+  var TOUCH = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
+  window.__hmsTouch = TOUCH;
+  document.documentElement.classList.add(TOUCH ? "hms-touch" : "hms-desk");
+  (function () { var im = new Image(); im.onload = function () { window.__hmsWebp = im.width === 1; }; im.onerror = function () { window.__hmsWebp = false; };
+    im.src = "data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA"; })();
+  document.addEventListener("error", function (e) { var t = e.target; if (t && t.tagName === "IMG" && /\/title-art\.webp/.test(t.src || "")) t.src = t.src.replace("title-art.webp", "title-art.png"); }, true);
+  /* ---------- photosensitivity: one global flash gate (max 2 flashes/s, none under reduced motion) ---------- */
+  var lastFlash = -1e9, flashEl = null; window.__hmsFlashN = 0;
+  window.__flashGate = function () { if (reduced) return false; var n = performance.now(); if (n - lastFlash < 500) return false; lastFlash = n; window.__hmsFlashN++; return true; };
+  window.__hmsReduced = function () { return reduced; };
+  function softFlash(r, gr, b, ms) { /* subtle full-screen tint, alpha 0.16 max */
+    if (!window.__flashGate()) return;
+    if (!flashEl || !document.body.contains(flashEl)) { flashEl = document.createElement("div"); flashEl.id = "hms-flash"; flashEl.style.cssText = "position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0"; document.body.appendChild(flashEl); }
+    flashEl.style.transition = "none"; flashEl.style.background = "rgb(" + (r | 0) + "," + (gr | 0) + "," + (b | 0) + ")"; flashEl.style.opacity = ".16"; void flashEl.offsetWidth;
+    flashEl.style.transition = "opacity " + Math.max(160, ms || 0) + "ms ease-out"; flashEl.style.opacity = "0";
+  }
   function store() { return window.__store && window.__store.getState && window.__store.getState(); }
   function muted() { var s = store(); return !!(s && s.muted); }
   function ls() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
@@ -28,12 +46,17 @@
   /* ---------------- CSS: corner chip + learned list ---------------- */
   var css = document.createElement("style");
   css.textContent =
-    "#hms-chip{position:fixed;left:10px;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:59;max-width:min(62vw,230px);padding:4px 9px 5px;border-radius:8px;" +
-    "background:rgba(12,10,9,.78);border-left:3px solid #facc15;color:#e7e5e4;font:400 11px/1.3 'IBM Plex Sans',system-ui,sans-serif;pointer-events:none;" +
+    "#hms-chip{position:fixed;left:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 128px);z-index:59;max-width:min(64vw,260px);padding:5px 10px 6px;border-radius:9px;" +
+    "background:rgba(12,10,9,.82);border-left:3px solid #facc15;color:#f5f5f4;font:400 13px/1.3 'IBM Plex Sans',system-ui,sans-serif;pointer-events:none;" +
     "opacity:0;transform:translateX(-8px);transition:opacity .2s ease,transform .25s ease}" +
-    "#hms-chip.on{opacity:1;transform:none}#hms-chip b{font:600 11.5px/1.3 Oswald,'IBM Plex Sans',sans-serif;letter-spacing:.04em;color:#facc15;margin-right:4px}" +
+    "#hms-chip.on{opacity:1;transform:none}#hms-chip b{font:600 14px/1.3 Oswald,'IBM Plex Sans',sans-serif;letter-spacing:.04em;color:#facc15;margin-right:4px}" +
     "#hms-cv{position:fixed;inset:0;width:100%;height:100%;z-index:58;pointer-events:none;display:none}" +
     ".sm-learn{margin:.6rem 0 0;padding:9px 11px;border-radius:12px;border:1px solid rgba(250,204,21,.5);background:rgba(250,204,21,.07);text-align:left}" +
+    "html:root{--color-subtle:#a39e97;--color-muted:#bdb7ae}" +
+    "html:not(.hms-touch) .hms-touch-only{display:none!important}html.hms-touch .hms-desk-only{display:none!important}" +
+    ".hms-tap{min-height:44px;min-width:44px;padding:0 16px}" +
+    ".z-20 button:has(svg.lucide-share),.z-20 button:has(svg.lucide-smartphone),.goscroll button:has(svg.lucide-share),.z-30 button:has(svg.lucide-share){min-height:44px}" +
+    "@media (prefers-reduced-motion:reduce){#hms-flash{display:none!important}}" +
     ".sm-learn h3{margin:0 0 6px;font:600 12px/1.2 Oswald,'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#facc15}" +
     ".sm-learn ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}" +
     ".sm-learn li{margin:0;padding:3px 9px 3px 6px;border-radius:999px;background:rgba(250,204,21,.13);border:1px solid rgba(250,204,21,.35);font:600 13px/1.3 Oswald,'IBM Plex Sans',sans-serif;letter-spacing:.02em;color:#fef3c7;white-space:nowrap}" +
@@ -45,18 +68,19 @@
     plumber: ["Rørlegger", "rask, går tett på"], clerk: ["Kontor", "kaster tegninger"], bricklayer: ["Murer", "kaster murstein"],
     welder: ["Sveiser", "sveisegnister"], foreman: ["Formannen", "sjokkbølge – hold avstand"], manager: ["Byggelederen", "siste sjef"]
   };
-  var chip = null, chipQ = [], chipBusy = false, seenRoles = {};
+  var chip = null, chipQ = [], chipBusy = false, seenRoles = {}, coachUntil = 0;
   function chipEl() {
     if (chip && document.body.contains(chip)) return chip;
     chip = document.createElement("div"); chip.id = "hms-chip"; chip.setAttribute("aria-live", "polite"); document.body.appendChild(chip); return chip;
   }
   function chipNext() {
     if (chipBusy || !chipQ.length) return;
+    var wait = coachUntil - Date.now(); if (wait > 0) { chipBusy = true; setTimeout(function () { chipBusy = false; chipNext(); }, wait + 50); return; }
     var r = chipQ.shift(), d = DESC[r] || [r, ""], c = chipEl();
     chipBusy = true;
     c.innerHTML = ""; var b = document.createElement("b"); b.textContent = d[0]; c.appendChild(b); c.appendChild(document.createTextNode(" " + d[1]));
     requestAnimationFrame(function () { c.classList.add("on"); });
-    setTimeout(function () { c.classList.remove("on"); setTimeout(function () { chipBusy = false; chipNext(); }, 260); }, 1500);
+    setTimeout(function () { c.classList.remove("on"); setTimeout(function () { chipBusy = false; chipNext(); }, 260); }, 2500);
   }
   function chipClear() { chipQ = []; if (chip) chip.classList.remove("on"); }
 
@@ -171,7 +195,7 @@
   /* --- emergency number set-piece (113 / 110 / 112) --- */
   function emergency(kind, num, word, c1, c2, dir) {
     return { dur: 3.1, own: true, draw: function (t, Lo, dt) {
-      var u = Lo.u, cx = Lo.cx, ay = Lo.ay, flash = Math.floor(t * 9) % 2 === 0;
+      var u = Lo.u, cx = Lo.cx, ay = Lo.ay, flash = reduced ? true : Math.floor(t * 4) % 2 === 0;
       var inS = eOutBack(seg(t, 0, .35)), shrink = seg(t, 1.55, 2.0), drive = seg(t, 2.0, 3.1);
       // light-bar halos / flames / beam behind the number
       if (t < 2.05) {
@@ -189,7 +213,7 @@
           g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 60 * u, -.28, .28); g.closePath(); g.fill(); g.rotate(Math.PI); g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 60 * u, -.28, .28); g.closePath(); g.fill();
           g.restore(); g.globalAlpha = 1; glowDot(cx, ay - 20 * u, 7 * u, "rgba(191,219,254,1)", a);
         } else {
-          glowDot(cx - 26 * u, ay, 34 * u, flash ? c1 : "rgba(0,0,0,0)", .8 * a); glowDot(cx + 26 * u, ay, 34 * u, !flash ? c2 : "rgba(0,0,0,0)", .8 * a);
+          glowDot(cx - 26 * u, ay, 30 * u, flash ? c1 : "rgba(0,0,0,0)", .45 * a); glowDot(cx + 26 * u, ay, 30 * u, (!flash || reduced) ? c2 : "rgba(0,0,0,0)", .45 * a);
         }
         var s = inS * (1 - shrink * .85), x = cx + dir * shrink * 2 * u, y = ay + shrink * 8 * u;
         g.save(); g.translate(x, y); g.scale(s, s); g.globalAlpha = 1 - shrink;
@@ -263,7 +287,7 @@
         if (ss > 0) { g.fillStyle = "#fef08a"; g.beginPath(); g.moveTo(sx, sy - ss); g.lineTo(sx + ss * .3, sy - ss * .3); g.lineTo(sx + ss, sy); g.lineTo(sx + ss * .3, sy + ss * .3); g.lineTo(sx, sy + ss); g.lineTo(sx - ss * .3, sy + ss * .3); g.lineTo(sx - ss, sy); g.lineTo(sx - ss * .3, sy - ss * .3); g.fill(); } }
     }); },
     stop: function () { return piece(2.7, function (t, Lo) {
-      var u = Lo.u, sl = seg(t, 0, .28), s = 2.4 - 1.4 * eIn(sl), sh = t > .28 ? Math.sin(t * 70) * 2.2 * u * Math.exp(-7 * (t - .28)) : 0;
+      var u = Lo.u, sl = seg(t, 0, .28), s = 2.4 - 1.4 * eIn(sl), sh = t > .28 && !reduced ? Math.sin(t * 70) * 2.2 * u * Math.exp(-7 * (t - .28)) : 0;
       if (t > .28) { var rp = seg(t, .28, .8); g.strokeStyle = "rgba(255,255,255," + (.6 * (1 - rp)) + ")"; g.lineWidth = 1.5 * u; g.beginPath(); g.ellipse(Lo.cx, Lo.ay + 19 * u, (16 + rp * 26) * u, (3 + rp * 4) * u, 0, 0, 6.283); g.stroke(); }
       g.save(); g.translate(Lo.cx + sh, Lo.ay); g.scale(s, s); g.globalAlpha *= Math.min(1, sl * 2.5);
       octagon(0, 0, 18 * u, "#fff"); octagon(0, 0, 16.3 * u, "#dc2626"); text("STOPP", 0, .5 * u, 8.2 * u, "#fff", { stroke: false });
@@ -339,7 +363,9 @@
       g.font = (15 * u) + "px system-ui,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.fillText(item.e || "\u26A1", Lo.cx, Lo.ay + 1 * u);
     }); }
   };
-  function layout() { var u = Math.min(W, 460) / 100; var cy = clamp(H * .3, 150, H * .42); return { u: u, cx: W / 2, cy: cy, ay: cy - 4 * u, ty: cy + 26 * u }; }
+  var safeTop = 0;
+  function measureSafe() { try { var d = document.createElement("div"); d.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top,0px);visibility:hidden"; document.body.appendChild(d); safeTop = d.getBoundingClientRect().height || 0; d.remove(); } catch (e) {} }
+  function layout() { var u = Math.min(W, 460) / 100 * .8, top = safeTop + 110, ay = top + 20 * u, ty = ay + 25 * u; return { u: u, cx: W / 2, cy: (ay + ty) / 2, ay: ay, ty: ty }; }
   function frame(now) {
     raf = 0; if (!anim) return;
     var dt = Math.min(.05, (now - (lastF || now)) / 1000); lastF = now;
@@ -348,14 +374,14 @@
     if (anim.t >= anim.th.dur) { stopAnim(); return; }
     var Lo = layout(), k = Math.min(1, anim.t * 4) * (1 - seg(anim.t, anim.th.dur - .35, anim.th.dur));
     // soft backdrop for legibility (no hard box)
-    var gr = g.createRadialGradient(Lo.cx, Lo.cy, 0, Lo.cx, Lo.cy, 62 * Lo.u); gr.addColorStop(0, "rgba(8,8,8,.5)"); gr.addColorStop(1, "rgba(8,8,8,0)");
-    g.globalAlpha = k; g.fillStyle = gr; g.fillRect(0, Lo.cy - 62 * Lo.u, W, 124 * Lo.u); g.globalAlpha = 1;
+    var gr = g.createRadialGradient(Lo.cx, Lo.cy, 0, Lo.cx, Lo.cy, 56 * Lo.u); gr.addColorStop(0, "rgba(8,8,8,.5)"); gr.addColorStop(1, "rgba(8,8,8,0)");
+    g.globalAlpha = k; g.fillStyle = gr; g.fillRect(0, Lo.cy - 56 * Lo.u, W, 112 * Lo.u); g.globalAlpha = 1;
     try { anim.th.draw(anim.t, Lo, dt, anim.item); } catch (e) { if (!frame.err) { frame.err = 1; console.warn("hms-fx", e); } stopAnim(); return; }
     raf = requestAnimationFrame(frame);
   }
   function stopAnim() { anim = null; if (raf) cancelAnimationFrame(raf); raf = 0; if (g) g.clearRect(0, 0, W, H); if (cv) cv.style.display = "none"; }
   function playSlogan(i) {
-    canvas(); fit();
+    canvas(); fit(); measureSafe();
     var item = L[i], mk = THEMES[item.k] || THEMES.generic, th = mk(item);
     anim = { i: i, item: item, th: th, t: 0, until: Date.now() + th.dur * 1000 };
     cv.style.display = "block"; lastF = 0; if (!raf) raf = requestAnimationFrame(frame);
@@ -427,8 +453,12 @@
   var round = null;
   function startRound() {
     var o = ls(), idx = (o.next || 0) % L.length;
-    round = { idx: idx, shown: [], last: 999, winKey: null, winT: 0 };
+    round = { idx: idx, shown: [], skipped: 0, last: 999, winKey: null, winT: 0 };
     seenRoles = {}; chipClear(); stopAnim();
+    /* onboarding: the single control hint (first rounds) is the only text during the first ~5.6 s */
+    var cn = 0; try { cn = +(localStorage.getItem("strom-demo-coach-n") || 0); } catch (e) {}
+    coachUntil = Date.now() + (cn < 3 ? 5600 : 1500);
+    window.__smBusyUntil = Math.max(window.__smBusyUntil || 0, coachUntil);
   }
   function onScreen(sc) {
     var cam = sc.cameras && sc.cameras.main, v = cam && cam.worldView, n = 0, roles = [];
@@ -440,17 +470,21 @@
     });
     return { n: n, roles: roles };
   }
-  function popupVisible() { var p = document.getElementById("extras-pop"); return p && p.style.opacity === "1"; }
+  function popupVisible() { var p = document.getElementById("extras-pop"); return !!(p && (p.style.opacity === "1" || parseFloat(getComputedStyle(p).opacity) > 0.02)); } /* incl. fade-out */
+  var SLOTS = [54, 41, 27, 13]; /* target timeLeft per slogan: spread over the whole 60 s */
   function schedule(sc, os, dt) {
-    if (!round || anim || round.shown.length >= 4) return;
-    var t = sc.timeLeft; if (t > 56.5 || t < 4.5) return;
-    if (round.last - t < 6) return; /* min gap between slogans (timeLeft counts down) */
-    var DUR = 3.1, noMore = sc.spawnN >= 6, fits = noMore ? t > DUR + 1.5 : sc.spawnIn > DUR + .4;
-    if (!fits || popupVisible()) return;
-    var key = sc.spawnN; if (round.winKey !== key) { round.winKey = key; round.winT = 0; }
+    if (!round || anim) return;
+    var k = round.shown.length + round.skipped; if (k >= SLOTS.length) return;
+    var t = sc.timeLeft, tg = SLOTS[k];
+    if (t > tg + 2.5) return;                               /* window opens 2.5 s before the target */
+    if (t < tg - 6) { round.skipped++; round.winT = 0; return; } /* window missed (e.g. long popup) */
+    if (Date.now() < (window.__smBusyUntil || 0) || popupVisible() || (window.__store && window.__store.getState().banner)) return;
+    if (round.last - t < 6) return;                         /* min gap between slogans */
+    var DUR = 3.1, noMore = sc.spawnN >= 6, fits = noMore ? t > DUR + 1 : sc.spawnIn > DUR + .4;
     round.winT += dt;
-    var allowed = round.shown.length < 3 && t < 36 ? 1e9 : 2 + Math.floor(round.winT / 1.0); /* calm moment preferred; 3 per round guaranteed */
-    if (os.n > allowed) return;
+    var force = t <= tg - 3;                                /* guaranteed fallback: play even if busy */
+    if (!force && (!fits || os.n > 2 + Math.floor(round.winT / 1.0))) return;
+    round.winT = 0;
     var i = (round.idx + round.shown.length) % L.length;
     round.shown.push(i); round.last = t; playSlogan(i);
     var o = ls(); o.seen = o.seen || []; if (o.seen.indexOf(i) < 0) o.seen.push(i); o.next = (i + 1) % L.length; lsSave(o);
@@ -465,9 +499,14 @@
     // wave banners ("N på tomten", "Formannen på tomten", ...) off – the corner chip introduces new types
     var sb = sc.spawnBurst;
     sc.spawnBurst = function () { var r = sb.apply(this, arguments); try { this.bannerT = 0; window.__store.getState().patch({ banner: null }); } catch (e) {} return r; };
+    var cam = sc.cameras.main, oShake = cam.shake;
+    cam.flash = function (d, r, gr, b) { softFlash(r, gr, b, d); return cam; };
+    cam.shake = function () { if (reduced) return cam; return oShake.apply(cam, arguments); };
     sc.events.on("postupdate", function () {
       try {
+        if (reduced) { sc.trauma = 0; if (sc.cameras.main.rotation) sc.cameras.main.setAngle(0); }
         var live = sc.playing && !sc.paused && !sc.over, dt = Math.min(.05, (sc.game.loop.delta || 16) / 1000);
+        if (anim) window.__smBusyUntil = Math.max(window.__smBusyUntil || 0, Date.now() + 700); /* game time may run slower than wall time (low FPS) */
         if (!live) return;
         var os = onScreen(sc); HB.count = os.n;
         os.roles.forEach(function (r) { if (r && !seenRoles[r]) { seenRoles[r] = 1; chipQ.push(r); chipNext(); } });
@@ -505,6 +544,7 @@
   function hookStore() {
     var s = window.__store; if (!s || hooked) return; hooked = true; prev = s.getState().phase;
     s.subscribe(function (x) {
+      if (x.banner && x.phase === "playing" && (Date.now() < coachUntil || anim)) { try { s.getState().patch({ banner: null }); } catch (e) {} }
       if (x.phase === prev) return;
       var p = prev; prev = x.phase;
       if (x.phase === "playing" && p !== "paused") startRound();
@@ -512,7 +552,7 @@
       if (x.phase !== "playing" && x.phase !== "paused") { stopAnim(); chipClear(); }
     });
   }
-  window.__hms = { list: L, play: function (i) { return playSlogan(i % L.length); }, hb: HB, state: function () { return { anim: anim && { i: anim.i, t: anim.t }, round: round, count: HB.count, bpm: Math.round(HB.bpm), vol: +HB.vol.toFixed(3) }; } };
+  window.__hms = { list: L, play: function (i) { return playSlogan(i % L.length); }, hb: HB, flashes: function () { return window.__hmsFlashN; }, state: function () { return { anim: anim && { i: anim.i, t: anim.t }, round: round, count: HB.count, bpm: Math.round(HB.bpm), vol: +HB.vol.toFixed(3) }; } };
   function boot() { setInterval(function () { hookStore(); hookScene(); }, 400); }
   if (document.body) boot(); else document.addEventListener("DOMContentLoaded", boot);
 })();

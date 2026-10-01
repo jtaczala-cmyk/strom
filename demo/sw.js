@@ -2,7 +2,8 @@
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
-const CACHE = "strom-demo-v10";
+const CACHE = "strom-demo-v11";
+const ASSETS = "strom-demo-assets-v1"; /* long-lived: survives version bumps (assets are renamed / ?v= versioned when they change) */
 const BASE = "/strom/demo/";
 const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2", BASE + "sponsor.js", BASE + "sponsor-fx.js", BASE + "hms-fx.js"];
 
@@ -17,7 +18,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("strom-demo-") && k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("strom-demo-") && k !== CACHE && k !== ASSETS).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -51,9 +52,9 @@ self.addEventListener("fetch", (event) => {
 
   // Versioned game images and icons: cache first.
   const p = url.pathname.slice(BASE.length - 1);
-  if (p.startsWith("/game/") || p.startsWith("/icon") || p.startsWith("/splash") || p === "/favicon.svg" || p === "/apple-touch-icon.png" || p === "/qr.png") {
+  if (p.startsWith("/game/") || p.startsWith("/fonts/") || p.startsWith("/icon") || p.startsWith("/splash") || p === "/favicon.svg" || p === "/apple-touch-icon.png" || p === "/qr.png") {
     event.respondWith(
-      caches.open(CACHE).then(async (cache) => {
+      caches.open(ASSETS).then(async (cache) => {
         const hit = await cache.match(req);
         if (hit) return hit;
         const res = await fetch(req);

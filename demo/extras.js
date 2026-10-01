@@ -92,7 +92,7 @@
   var SB_KEY = String(LB_CFG.supabaseKey || LB_CFG.supabasePublishableKey || LB_CFG.supabaseAnonKey || "");
   var ONLINE = !!(SB_URL && SB_KEY && /^https:\/\//.test(SB_URL));
   var LOCAL_KEY = "lb-local-" + GAME;
-  function optedOut() { return ls("lb-online-off") === "1"; } /* player unticked "show my score online" */
+  function optedOut() { return ls("lb-online-consent") !== "1"; } /* GDPR: online only after the player ticked the box */
   var MAX_SCORE = GAME === "strom-demo" ? 7500 : 6000, MAX_KO = 48;
 
   function localRows() {
@@ -158,6 +158,21 @@
         return res.status === 204 || opts.body ? null : res.json();
       }, function (e) { if (timer) clearTimeout(timer); throw e; });
   }
+  var pend = null; /* own score while it is being sent / if it could not be sent */
+  function sendTry(body, n) {
+    return sbFetch("scores", { method: "POST", body: body }).catch(function (e) {
+      var st = +(String(e && e.message).match(/HTTP (\d+)/) || [])[1] || 0;
+      if (n >= 2 || (st >= 400 && st < 500 && st !== 429 && st !== 408)) throw e;   /* rejected for good: don't retry */
+      return new Promise(function (r) { setTimeout(r, (n + 1) * 2500 + Math.random() * 2500); }).then(function () { return sendTry(body, n + 1); });
+    });
+  }
+  function withPend(rows) {
+    if (!pend) return rows;
+    var r = rows.filter(function (x) { return !(x.name === pend.name && x.score === pend.score); });
+    r.push({ id: "pend", name: pend.name + (pend.failed ? " · ikke sendt" : " · sendes…"), score: pend.score, kills: pend.kills });
+    r.sort(function (a, b) { return b.score - a.score; });
+    return r.slice(0, 10);
+  }
   var lb = {
     online: ONLINE,
     game: GAME,
@@ -166,7 +181,7 @@
       return sbFetch("scores?select=id,name,score,ko&game=eq." + encodeURIComponent(GAME) + "&order=score.desc,created_at.asc&limit=100")
         .then(function (rows) {
           lb.online = true;
-          return top10((rows || []).map(function (r) { return { id: r.id, name: r.name, score: r.score, kills: r.ko || 0 }; }));
+          return withPend(top10((rows || []).map(function (r) { return { id: r.id, name: r.name, score: r.score, kills: r.ko || 0 }; })));
         })
         .catch(function () { lb.online = false; return top10(localRows()); });
     },
@@ -175,13 +190,16 @@
       var row = { name: cleanName(d.name), score: Math.max(0, Math.floor(+d.score || 0)), kills: Math.max(0, Math.floor(+d.kills || 0)) };
       if (!row.name) return lb.list();
       localAdd(row);
+      if (!ONLINE) return lb.list();
       var nm = onlineName(row.name);
-      if (!ONLINE || optedOut() || !nm || row.score > MAX_SCORE || row.kills > MAX_KO) return lb.list();
+      if (optedOut() || !nm || row.score > MAX_SCORE || row.kills > MAX_KO) { pend = { name: row.name, score: row.score, kills: row.kills, failed: true }; return lb.list(); }
       var st = window.__store && window.__store.getState && window.__store.getState();
       var body = { game: GAME, name: nm, score: row.score, ko: row.kills };
       if (st && typeof st.wave === "number" && st.wave >= 0 && st.wave <= 6) body.wave = Math.floor(st.wave);
-      return sbFetch("scores", { method: "POST", body: JSON.stringify(body) })
-        .catch(function () { /* offline / rejected: the local copy is kept */ })
+      var mine = pend = { name: nm, score: row.score, kills: row.kills, failed: false };
+      return new Promise(function (res) { setTimeout(res, Math.random() * 15000); })   /* spread peaks */
+        .then(function () { return sendTry(JSON.stringify(body), 0); })
+        .then(function () { if (pend === mine) pend = null; }, function () { mine.failed = true; })
         .then(function () { return lb.list(); });
     },
     nameOk: onlineName,
@@ -258,6 +276,7 @@
   }
   function popup(text, force) {
     var now = Date.now();
+    if (force && now < (window.__smBusyUntil || 0)) { setTimeout(function () { popup(text, true); }, window.__smBusyUntil - now + 80); return; }
     if (!force && now - lastPop < 4000) return; if (!force && now < (window.__smBusyUntil || 0)) return; if (!force && now < (window.__smBusyUntil || 0)) return;
     lastPop = now;
     var el = ensurePop();
@@ -291,7 +310,7 @@
     muteBtn.type = "button";
     muteBtn.id = "extras-mute";
     muteBtn.setAttribute("data-no-stick", "");
-    muteBtn.style.cssText = "position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;z-index:60;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(18,17,15,.72);font-size:20px;line-height:40px;text-align:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent";
+    muteBtn.style.cssText = "position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;z-index:60;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(18,17,15,.72);font-size:20px;line-height:40px;text-align:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent";
     muteBtn.addEventListener("click", function (e) {
       e.preventDefault();
       setMuted(!isMuted());
@@ -381,7 +400,7 @@
         if (s.phase === "playing" && p.phase !== "paused") {
           highAtStart = p.highScore || 0;
           SFX.start();
-          setTimeout(function () { var st2 = window.__store && window.__store.getState(); if (st2 && st2.phase === "playing") popup(T.start, true); }, 1800);
+          /* start pop-up removed (onboarding: one text at a time) */
           scheduleRandom();
         }
         if (s.phase === "over") {
@@ -435,7 +454,7 @@
       el.textContent = FOOT + " \u00b7 ";
       var a = document.createElement("a");
       a.id = "legal-priv"; a.href = "/strom/demo/personvern/"; a.textContent = "Personvern";
-      a.style.cssText = "color:inherit;text-decoration:underline;text-underline-offset:2px;pointer-events:auto;padding:4px 2px;margin:-4px -2px";
+      a.style.cssText = "color:inherit;text-decoration:underline;text-underline-offset:2px;pointer-events:auto;display:inline-block;padding:16px 8px;margin:-16px -8px";
       el.appendChild(a);
       el.appendChild(document.createElement("br"));
       var g = document.createElement("span"); g.textContent = "Created with Grok"; el.appendChild(g);
@@ -458,6 +477,9 @@
   }
   function ev(name) {
     if (!on) return;
+    setTimeout(function () { evNow(name); }, Math.random() * 15000);
+  }
+  function evNow(name) {
     try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: GAME + "-" + name, title: GAME + " " + name, event: true }); } catch (e) {}
   }
   window.__track = ev;
@@ -495,15 +517,15 @@
       var p = document.createElement("p"); p.style.margin = "0";
       p.appendChild(document.createTextNode(TXT + " "));
       var a = document.createElement("a"); a.href = HREF; a.textContent = LINK;
-      a.style.cssText = "color:#2dd4bf;text-decoration:underline;text-underline-offset:2px";
+      a.style.cssText = "color:#2dd4bf;text-decoration:underline;text-underline-offset:2px;display:inline-block;padding:15px 6px;margin:-15px -6px";
       p.appendChild(a); d.appendChild(p);
       var l = document.createElement("label");
-      l.style.cssText = "display:flex;align-items:center;gap:6px;margin-top:4px;cursor:pointer";
+      l.style.cssText = "display:flex;align-items:center;gap:10px;margin-top:0;min-height:44px;cursor:pointer";
       var c = document.createElement("input"); c.type = "checkbox"; c.className = "lb-opt";
-      var off = false; try { off = window.localStorage.getItem(KEY) === "1"; } catch (e) {}
-      c.checked = !off; c.style.cssText = "width:15px;height:15px;accent-color:#2dd4bf;margin:0";
+      var on = false; try { on = window.localStorage.getItem("lb-online-consent") === "1"; } catch (e) {}
+      c.checked = on; c.style.cssText = "width:22px;height:22px;accent-color:#2dd4bf;margin:0;flex:none";
       c.addEventListener("change", function () {
-        try { window.localStorage.setItem(KEY, c.checked ? "0" : "1"); } catch (e) {}
+        try { window.localStorage.setItem(KEY, c.checked ? "0" : "1"); window.localStorage.setItem("lb-online-consent", c.checked ? "1" : "0"); } catch (e) {}
         document.querySelectorAll(".lb-opt").forEach(function (o) { o.checked = c.checked; });
       });
       l.appendChild(c); l.appendChild(document.createTextNode(BOX)); d.appendChild(l);

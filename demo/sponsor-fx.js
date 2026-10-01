@@ -217,7 +217,7 @@
     d.innerHTML = iconImg(40) + '<div><i>Presentert av' + (EX ? '<em>' + esc(EXL) + '</em>' : '') + '</i><b>' + esc(NAME) + '</b></div>';
     box.insertBefore(d, box.firstChild);
   }
-  function flash(el, a, ms) { if (!el) return; el.style.transition = "none"; el.style.opacity = a; void el.offsetWidth; el.style.transition = ""; setTimeout(function () { el.style.opacity = 0; }, ms || 60); }
+  function flash(el, a, ms) { if (!el) return; if (window.__flashGate && !window.__flashGate()) return; a = Math.min(a, .35); el.style.transition = "none"; el.style.opacity = a; void el.offsetWidth; el.style.transition = ""; setTimeout(function () { el.style.opacity = 0; }, ms || 60); }
 
   /* ---------- end of shift ---------- */
   var tipI = Math.floor(Math.random() * 100), highAtStart = 0;
@@ -370,14 +370,18 @@
     });
     sc.fx.ring(sc.player.x, sc.player.y, 120); sc.fx.burst(x, y, 24);
     emit(x, y - 10, 70, 360, [hex(P), hex(A), 0xffffff]);
+    sc.syncHud();
+    var fxRun = function () {
     var c = Phaser_rgb(P); sc.cameras.main.flash(180, c[0], c[1], c[2], true); sc.cameras.main.shake(260, .01);
     var tx = sc.add.text(sc.player.x, sc.player.y - 70, "SPONSOR-BOOST  +" + bonus, { fontFamily: "Oswald, sans-serif", fontSize: "22px", fontStyle: "700", color: P, stroke: "#0c0a09", strokeThickness: 6 }).setOrigin(.5).setDepth(2100).setScale(.4);
     sc.tweens.add({ targets: tx, scale: 1.1, duration: 260, ease: "Back.easeOut", onComplete: function () { sc.tweens.add({ targets: tx, y: tx.y - 40, alpha: 0, delay: 500, duration: 600, onComplete: function () { tx.destroy(); } }); } });
-    sc.syncHud();
     try { window.__extrasSfx && window.__extrasSfx.heal(); setTimeout(function () { window.__extrasSfx && window.__extrasSfx.fanfare(); }, 200); } catch (e) {}
     try { navigator.vibrate && navigator.vibrate([30, 40, 30, 40, 60]); } catch (e) {}
     try { window.__extrasPopup && window.__extrasPopup((S.kitName || "Sponsor-verktøykasse") + "! Levert av " + NAME + (EX ? " (" + EXL.toLowerCase() + ")" : ""), true); } catch (e) {}
     flash(boostEl, .95, 500);
+    };
+    var fxGate = function () { var wait = (window.__smBusyUntil || 0) - Date.now(); if (wait > 0) setTimeout(fxGate, wait + 60); else fxRun(); };
+    fxGate();
     boostT = 2.5;
   }
   var boostT = 0;
@@ -387,7 +391,7 @@
     brandPickups(sc, t);
     var live = sc.playing && !sc.paused && !sc.over;
     if (live) {
-      if (!kit) { kitNext -= dt; if (kitNext <= 0 && sc.timeLeft > 6) spawnKit(sc); }
+      if (!kit) { kitNext -= dt; if (kitNext <= 0 && sc.timeLeft > 6 && Date.now() > (window.__smBusyUntil || 0)) spawnKit(sc); }
       else {
         kit.life -= dt; kit.t += dt;
         if (kit.life <= 0) { emit(kit.x, kit.y, 16, 120, [hex(P)]); removeKit(); kitNext = 12; }
