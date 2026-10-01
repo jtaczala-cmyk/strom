@@ -2,9 +2,9 @@
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
-const CACHE = "strom-demo-v9";
+const CACHE = "strom-demo-v10";
 const BASE = "/strom/demo/";
-const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2", BASE + "sponsor.js", BASE + "sponsor-fx.js"];
+const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2", BASE + "sponsor.js", BASE + "sponsor-fx.js", BASE + "hms-fx.js"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -33,7 +33,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
 
   // Pages/HTML and the SW-adjacent files: always network first, bypassing the HTTP cache.
-  const isDoc = req.mode === "navigate" || url.pathname === BASE || url.pathname.endsWith(".html") || url.pathname.endsWith(".webmanifest") || url.pathname.endsWith("/config.js") || url.pathname.endsWith("/extras.js") || url.pathname.endsWith("/sponsor.js") || url.pathname.endsWith("/sponsor-fx.js");
+  const isDoc = req.mode === "navigate" || url.pathname === BASE || url.pathname.endsWith(".html") || url.pathname.endsWith(".webmanifest") || url.pathname.endsWith("/config.js") || url.pathname.endsWith("/extras.js") || url.pathname.endsWith("/sponsor.js") || url.pathname.endsWith("/sponsor-fx.js") || url.pathname.endsWith("/hms-fx.js");
   if (isDoc) {
     event.respondWith(
       fetch(req.url, { cache: "no-store", credentials: "same-origin" })
