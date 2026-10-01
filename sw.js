@@ -2,10 +2,10 @@
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
-const CACHE = "strom-nb-gh-v14";
+const CACHE = "strom-nb-gh-v15";
 const ASSETS = "strom-assets-v1"; /* long-lived: survives version bumps (assets are renamed / ?v= versioned when they change) */
 const BASE = "/strom/";
-const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2"];
+const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "hms-slogans.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -35,7 +35,7 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/strom/demo/")) return; /* the sponsor demo has its own SW + caches */
 
   // Pages/HTML and the SW-adjacent files: always network first, bypassing the HTTP cache.
-  const isDoc = req.mode === "navigate" || url.pathname === BASE || url.pathname.endsWith(".html") || url.pathname.endsWith(".webmanifest") || url.pathname.endsWith("/config.js") || url.pathname.endsWith("/extras.js");
+  const isDoc = req.mode === "navigate" || url.pathname === BASE || url.pathname.endsWith(".html") || url.pathname.endsWith(".webmanifest") || url.pathname.endsWith("/config.js") || url.pathname.endsWith("/extras.js") || url.pathname.endsWith("/hms-slogans.js");
   if (isDoc) {
     event.respondWith(
       fetch(req.url, { cache: "no-store", credentials: "same-origin" })
