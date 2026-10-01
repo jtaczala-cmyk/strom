@@ -35,24 +35,24 @@
    "Før innkobling: varsle alle, fjern jordingen, alle ut av anlegget."
   ],
   "hurt": [
-   "Strømulykke? Bryt strømmen før du tar i den skadde.",
-   "Puster ikke? Ring 113 og start HLR.",
-   "Strøm gjennom kroppen? Alltid til lege – og meld elulykken til DSB."
+   "Bryt strømmen først",
+   "113 – ambulanse",
+   "Strømskade? Alltid lege"
   ],
   "medkit": [
-   "Førstehjelp ved strømulykker skal øves hvert år.",
-   "Før jobben: vit hvor førstehjelpsutstyr og hjertestarter er."
+   "Førstehjelp – øv årlig",
+   "Hjertestarter – vit hvor"
   ],
   "tool": [
-   "Nytt verktøy? Sjekk isolasjonen og at det passer spenningen.",
-   "Spenningstester etter NEK EN 61243-3 – ikke et vanlig multimeter."
+   "Sjekk isolasjonen",
+   "Riktig spenningstester"
   ],
   "armor": [
-   "Verneutstyr etter risikovurdering – også mot lysbue."
+   "Verneutstyr på"
   ],
   "coffee": [
-   "Pause er også HMS: trøtthet gir feil.",
-   "Tilbake fra pause? Sjekk at sikkerhetstiltakene fortsatt er på plass."
+   "Trøtt? Ta pause",
+   "Etter pause: sjekk låsene"
   ],
   "titles": [
    "Lærling med kost",
