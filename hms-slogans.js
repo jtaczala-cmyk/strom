@@ -1,9 +1,12 @@
 /*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE. */
-/* HMS slogans (2026-10-01, ported from the /strom/demo/ layer): 3–4 short animated HMS/FSE slogans per round as canvas
-   set-pieces in the top band at ~54/41/27/13 s left; no new enemy wave starts while a slogan plays; pop-ups wait until it ends;
-   never blocks input (pointer-events:none); "learned" list on the game-over card. Hooks window.__phaserGame / window.__store. */
+/* HMS layer (2026-10-01, same as the /strom/demo/ HMS layer):
+   1) enemy name plates off; each enemy type is introduced once per round in a small corner chip (2.5 s); wave banners off
+   2) 3–4 short animated HMS/FSE slogans per round in the top band at ~54/41/27/13 s left; no new enemy wave starts while a
+      slogan plays; pop-ups wait until it ends; never blocks input (pointer-events:none)
+   3) "learned" list on the game-over card   4) synthesised heartbeat following the enemy count (respects mute)
+   Hooks window.__phaserGame / window.__store. */
 (function () {
   "use strict";
   var CFG = {"slogans": [{"t": "113 – ambulanse", "k": "amb", "e": "🚑"}, {"t": "Lås og merk", "k": "lock", "e": "🔒"}, {"t": "Mål før du tar", "k": "meter", "e": "🔎"}, {"t": "Verneutstyr på", "k": "helmet", "e": "⛑️"}, {"t": "SJA – risikovurdering", "k": "sja", "e": "📋"}, {"t": "110 brann", "k": "fire", "e": "🚒"}, {"t": "Stopp ved tvil", "k": "stop", "e": "🛑"}, {"t": "Frakoble – sikre – verifisere", "k": "steps", "e": "🔌"}, {"t": "112 politi", "k": "police", "e": "🚓"}, {"t": "Hjertestarter – vit hvor", "k": "aed", "e": "❤️"}, {"t": "RUH – meld fra", "k": "ruh", "e": "📣"}, {"t": "Test testeren før/etter", "k": "test", "e": "✅"}, {"t": "Avstand til spenning", "k": "dist", "e": "⚡"}, {"t": "Strømulykke? Bryt strømmen", "k": "breaker", "e": "🔌"}, {"t": "Jord og kortslutt", "k": "ground", "e": "🔗"}, {"t": "Førstehjelp – øv årlig", "k": "generic", "e": "🩹"}], "ui": {"learned": "I dag lærte du:", "progress": "Du har sett {n} av {t} huskeregler. Spill videre for å se alle.", "done": "Du har sett alle {t} huskereglene. Neste runder repeterer dem.", "note": "Dette erstatter ikke FSE-kurset."}};
@@ -22,9 +25,13 @@
   function eBounce(x) { var n = 7.5625, d = 2.75; if (x < 1 / d) return n * x * x; if (x < 2 / d) return n * (x -= 1.5 / d) * x + .75; if (x < 2.5 / d) return n * (x -= 2.25 / d) * x + .9375; return n * (x -= 2.625 / d) * x + .984375; }
   var FONT = "Oswald, 'IBM Plex Sans', system-ui, sans-serif";
 
-  /* ---------------- CSS: canvas + learned list ---------------- */
+  /* ---------------- CSS: corner chip + learned list ---------------- */
   var css = document.createElement("style");
   css.textContent =
+    "#hms-chip{position:fixed;left:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 128px);z-index:59;max-width:min(64vw,260px);padding:5px 10px 6px;border-radius:9px;" +
+    "background:rgba(12,10,9,.82);border-left:3px solid #facc15;color:#f5f5f4;font:400 13px/1.3 'IBM Plex Sans',system-ui,sans-serif;pointer-events:none;" +
+    "opacity:0;transform:translateX(-8px);transition:opacity .2s ease,transform .25s ease}" +
+    "#hms-chip.on{opacity:1;transform:none}#hms-chip b{font:600 14px/1.3 Oswald,'IBM Plex Sans',sans-serif;letter-spacing:.04em;color:#facc15;margin-right:4px}" +
     "#hms-cv{position:fixed;inset:0;width:100%;height:100%;z-index:58;pointer-events:none;display:none}" +
     ".sm-learn{margin:.6rem 0 0;padding:9px 11px;border-radius:12px;border:1px solid rgba(250,204,21,.5);background:rgba(250,204,21,.07);text-align:left}" +
     ".sm-learn h3{margin:0 0 6px;font:600 12px/1.2 Oswald,'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#facc15}" +
@@ -33,7 +40,23 @@
     ".sm-learn li span{margin-right:5px}.sm-learn p{margin:7px 0 0;font:400 11px/1.35 'IBM Plex Sans',system-ui,sans-serif;color:#a8a29e}";
   (document.head || document.documentElement).appendChild(css);
 
-  var coachUntil = 0;
+  /* ---------------- 1) enemy introductions (corner chip, once per type per round) ---------------- */
+  var DESC = {"plumber": ["Rørlegger", "rask, går tett på"], "clerk": ["Kontor", "kaster tegninger"], "bricklayer": ["Murer", "kaster murstein"], "welder": ["Sveiser", "sveisegnister"], "foreman": ["Formannen", "sjokkbølge – hold avstand"], "manager": ["Byggelederen", "siste sjef"]};
+  var chip = null, chipQ = [], chipBusy = false, seenRoles = {}, coachUntil = 0;
+  function chipEl() {
+    if (chip && document.body.contains(chip)) return chip;
+    chip = document.createElement("div"); chip.id = "hms-chip"; chip.setAttribute("aria-live", "polite"); document.body.appendChild(chip); return chip;
+  }
+  function chipNext() {
+    if (chipBusy || !chipQ.length) return;
+    var wait = coachUntil - Date.now(); if (wait > 0) { chipBusy = true; setTimeout(function () { chipBusy = false; chipNext(); }, wait + 50); return; }
+    var r = chipQ.shift(), d = DESC[r] || [r, ""], c = chipEl();
+    chipBusy = true;
+    c.innerHTML = ""; var b = document.createElement("b"); b.textContent = d[0]; c.appendChild(b); c.appendChild(document.createTextNode(" " + d[1]));
+    requestAnimationFrame(function () { c.classList.add("on"); });
+    setTimeout(function () { c.classList.remove("on"); setTimeout(function () { chipBusy = false; chipNext(); }, 260); }, 2500);
+  }
+  function chipClear() { chipQ = []; if (chip) chip.classList.remove("on"); }
 
   /* ---------------- 2) slogan set-pieces on a canvas overlay ---------------- */
   var cv = null, g = null, W = 0, H = 0, anim = null, raf = 0, lastF = 0;
@@ -343,9 +366,48 @@
   }
   function animLeft() { return anim ? Math.max(0, anim.th.dur - anim.t) : 0; }
 
-  /* ---------------- audio: short stingers (shares the extras.js AudioContext, respects mute) ---------------- */
-  var HB = { ctx: null, out: null };
-  function ac() { var f = window.__extrasAudio, a = f && f(); if (!a || !a.ctx || a.ctx.state !== "running") return null; HB.ctx = a.ctx; HB.out = a.out; return a.ctx; }
+  /* ---------------- audio: heartbeat + small stingers (shares the extras.js AudioContext) ---------------- */
+  var HB = { bpm: 70, vol: 0, next: 0, count: 0, gain: null, lp: null, ctx: null };
+  function ac() {
+    var f = window.__extrasAudio, a = f && f(); if (!a || !a.ctx || a.ctx.state !== "running") return null;
+    if (HB.ctx !== a.ctx) {
+      HB.ctx = a.ctx; HB.gain = a.ctx.createGain(); HB.gain.gain.value = 1; HB.lp = a.ctx.createBiquadFilter(); HB.lp.type = "lowpass"; HB.lp.frequency.value = 650; HB.lp.Q.value = .7;
+      HB.lp.connect(HB.gain); HB.gain.connect(a.out); HB.out = a.out; HB.next = 0;
+    }
+    return a.ctx;
+  }
+  function thump(c, t, f0, f1, vol, dec) {
+    [["triangle", 1], ["sine", .8]].forEach(function (w, i) {
+      var o = c.createOscillator(), e = c.createGain(); o.type = w[0];
+      o.frequency.setValueAtTime(f0 / (i + 1) * (i ? 1.2 : 1), t); o.frequency.exponentialRampToValueAtTime(f1 / (i + 1) * (i ? 1.2 : 1), t + dec * .8);
+      e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(Math.max(.0002, vol * w[1]), t + .008); e.gain.exponentialRampToValueAtTime(.0001, t + dec);
+      o.connect(e); e.connect(HB.lp); o.start(t); o.stop(t + dec + .03);
+    });
+  }
+  function beat(c, t, vol, per) {
+    thump(c, t, 110, 55, vol, .16);                                   // lub
+    thump(c, t + clamp(per * .36, .17, .3), 135, 68, vol * .7, .12);  // dub
+  }
+  function hbTarget() {
+    var s = store(), n = HB.count;
+    if (!s || s.phase !== "playing" || muted() || document.hidden) return null;
+    if (n < 3) return { bpm: 70, vol: 0 };
+    var k = clamp((n - 3) / 9, 0, 1);
+    return { bpm: 70 + k * 66, vol: .16 + k * .34 };
+  }
+  var hbLast = 0;
+  setInterval(function () {
+    var now = performance.now(), dt = hbLast ? Math.min(.25, (now - hbLast) / 1000) : .06; hbLast = now;
+    var tg = hbTarget();
+    if (!tg) { HB.vol = 0; HB.bpm = 70; HB.next = 0; if (HB.gain && HB.ctx) HB.gain.gain.setTargetAtTime(0, HB.ctx.currentTime, .03); return; }
+    var c = ac(); if (!c) return;
+    HB.gain.gain.setTargetAtTime(1, c.currentTime, .05);
+    HB.bpm += clamp(tg.bpm - HB.bpm, -5 * dt, 9 * dt);
+    HB.vol += clamp(tg.vol - HB.vol, -.22 * dt, .3 * dt);
+    if (HB.vol < .02) { HB.next = 0; return; }
+    if (!HB.next || HB.next < c.currentTime) HB.next = c.currentTime + .06;
+    while (HB.next < c.currentTime + .2) { var per = 60 / HB.bpm; beat(c, HB.next, HB.vol, per); HB.next += per; }
+  }, 60);
   function tone(c, t, f, d, type, vol, f2) {
     var o = c.createOscillator(), e = c.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
     e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(vol, t + .01); e.gain.exponentialRampToValueAtTime(.0001, t + d);
@@ -366,7 +428,7 @@
   function startRound() {
     var o = ls(), idx = (o.next || 0) % L.length;
     round = { idx: idx, shown: [], skipped: 0, last: 999, winKey: null, winT: 0 };
-    stopAnim();
+    seenRoles = {}; chipClear(); stopAnim();
     /* onboarding: the single control hint (first rounds) is the only text during the first ~5.6 s */
     var cn = 0; try { cn = +(localStorage.getItem("strom-coach-n") || 0); } catch (e) {}
     coachUntil = Date.now() + (cn < 3 ? 5600 : 1500);
@@ -406,12 +468,18 @@
     var game = window.__phaserGame; if (!game || !window.__gameReady) return;
     var sc = game.scene.getScene("game"); if (!sc || !sc.enemies || !sc.sys.isActive() || sc.__hms) return;
     sc.__hms = true; scene = sc;
+    // name plates off (each type gets one short corner intro instead)
+    sc.labelApproaching = function (list) { (list || []).forEach(function (e) { if (e && e.plate) e.plate.setVisible(false); }); };
+    // wave banners ("N på tomten", "Formannen på tomten", ...) off – the corner chip introduces new types
+    var sb = sc.spawnBurst;
+    sc.spawnBurst = function () { var r = sb.apply(this, arguments); try { this.bannerT = 0; window.__store.getState().patch({ banner: null }); } catch (e) {} return r; };
     sc.events.on("postupdate", function () {
       try {
         var live = sc.playing && !sc.paused && !sc.over, dt = Math.min(.05, (sc.game.loop.delta || 16) / 1000);
         if (anim) window.__smBusyUntil = Math.max(window.__smBusyUntil || 0, Date.now() + 700); /* game time may run slower than wall time (low FPS) */
         if (!live) return;
-        var os = onScreen(sc);
+        var os = onScreen(sc); HB.count = os.n;
+        os.roles.forEach(function (r) { if (r && !seenRoles[r]) { seenRoles[r] = 1; chipQ.push(r); chipNext(); } });
         // hold the next enemy wave while a slogan is playing
         if (anim && sc.spawnN < 6 && sc.spawnIn < animLeft() + .3) sc.spawnIn = animLeft() + .3;
         schedule(sc, os, dt);
@@ -450,11 +518,11 @@
       if (x.phase === prev) return;
       var p = prev; prev = x.phase;
       if (x.phase === "playing" && p !== "paused") startRound();
-      if (x.phase === "over") { stopAnim(); learned(); }
-      if (x.phase !== "playing" && x.phase !== "paused") { stopAnim(); }
+      if (x.phase === "over") { stopAnim(); chipClear(); HB.count = 0; learned(); }
+      if (x.phase !== "playing" && x.phase !== "paused") { stopAnim(); chipClear(); }
     });
   }
-  window.__hms = { list: L, play: function (i) { return playSlogan(i % L.length); }, state: function () { return { anim: anim && { i: anim.i, t: anim.t }, round: round }; } };
+  window.__hms = { list: L, play: function (i) { return playSlogan(i % L.length); }, hb: HB, flashes: function () { return window.__hmsFlashN; }, state: function () { return { anim: anim && { i: anim.i, t: anim.t }, round: round, count: HB.count, bpm: Math.round(HB.bpm), vol: +HB.vol.toFixed(3) }; } };
   function boot() { setInterval(function () { hookStore(); hookScene(); }, 400); }
   if (document.body) boot(); else document.addEventListener("DOMContentLoaded", boot);
 })();
