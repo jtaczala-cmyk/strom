@@ -36,8 +36,7 @@
   ],
   "hurt": [
    "Bryt strømmen først",
-   "113 – ambulanse",
-   "Strømskade? Alltid lege"
+   "113 – ambulanse"
   ],
   "medkit": [
    "Førstehjelp – øv årlig",
