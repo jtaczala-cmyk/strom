@@ -47,7 +47,11 @@
    "Riktig spenningstester"
   ],
   "armor": [
-   "Verneutstyr på"
+   "Verneutstyr på",
+   "Hjelm, briller, hansker",
+   "Ødelagt utstyr? Bytt det",
+   "Vernesko – alltid på",
+   "Vernehansker – alltid på"
   ],
   "coffee": [
    "Trøtt? Ta pause",
