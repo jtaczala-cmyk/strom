@@ -1,4 +1,4 @@
-/*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
+/*! Copyright (c) 2026 Stop60. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE. */
 /* HMS layer (2026-10-01, same as the /strom/demo/ HMS layer):

@@ -1,4 +1,4 @@
-/*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
+/*! Copyright (c) 2026 Stop60. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
@@ -446,7 +446,7 @@
 /* ---- legal footer + optional cookie-free analytics (added 2026-09-30) ---- */
 (function () {
   "use strict";
-  var FOOT = "© 2026 Jacek Taczała · Alle rettigheter forbeholdt";
+  var FOOT = "© 2026 Stop60 · Alle rettigheter forbeholdt";
   function phase() { var s = window.__store && window.__store.getState && window.__store.getState(); return s && s.phase; }
   var el = null;
   function foot() {

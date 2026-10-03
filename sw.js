@@ -1,9 +1,9 @@
-/*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
+/*! Copyright (c) 2026 Stop60. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
-const CACHE = "strom-nb-gh-v28";
-const ASSETS = "strom-assets-v1"; /* long-lived: survives version bumps (assets are renamed / ?v= versioned when they change) */
+const CACHE = "strom-nb-gh-v29";
+const ASSETS = "strom-assets-v2"; /* long-lived: survives version bumps (assets are renamed / ?v= versioned when they change) */
 const BASE = "/strom/";
 const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "hms-slogans.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2"];
 

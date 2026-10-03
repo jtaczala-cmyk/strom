@@ -1,6 +1,6 @@
 # Third-party notices
 
-The game code and content are © 2026 Jacek Mariusz Taczała, all rights reserved (see `LICENSE`).
+The game code and content are © 2026 Stop60, all rights reserved (see `LICENSE`).
 The compiled bundles in `assets/` also contain the following open-source components, which remain
 under their own licences. Those licences permit commercial use provided this notice is retained.
 
