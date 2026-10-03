@@ -28,7 +28,7 @@ window.SPONSOR = {
     accent: "#39e1ff",    // glow / sparks
     text: "#ffffff"
   },
-  kitName: "Sponsor-verktøykasse",
+  kitName: "Sponsorverktøykasse",
   kitBonus: 250,
   tips: [
     "Bruk spenningstester etter NEK EN 61243 – og test den rett før og rett etter spenningskontrollen.",

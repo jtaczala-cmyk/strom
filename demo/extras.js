@@ -24,7 +24,7 @@
    "Regel 1: frakoble – fra alle steder anlegget kan få spenning.",
    "Regel 2: sikre mot innkobling – lås og merk.",
    "Regel 3: kontroller at anlegget er spenningsløst – alle faser.",
-   "Regel 4: jord og kortslutt – alltid i høyspenning, i lavspenning etter risikovurdering.",
+   "Regel 4: jord og kortslutt – alltid ved høyspenning, ved lavspenning etter risikovurdering.",
    "Regel 5: beskytt mot spenningssatte deler nær arbeidsstedet.",
    "Hver jobb har en utpekt ansvarlig for arbeidet (AFA) eller leder for sikkerhet (LFS).",
    "Før jobben: risikovurdering og sikker jobbanalyse (SJA).",
@@ -40,7 +40,7 @@
   ],
   "medkit": [
    "Førstehjelp – øv årlig",
-   "Hjertestarter – vit hvor"
+   "Hjertestarter – vet du hvor?"
   ],
   "tool": [
    "Sjekk isolasjonen",

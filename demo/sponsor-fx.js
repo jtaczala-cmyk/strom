@@ -350,7 +350,7 @@
       glow2: sc.add.image(p.x, p.y, "sp-glow").setBlendMode(1).setTint(hex(P)).setDepth(p.y - 1),
       rays: sc.add.graphics().setDepth(p.y - 2).setBlendMode(1),
       img: sc.add.image(p.x, p.y, "sp-kit").setScale(.62).setOrigin(.5, .8).setDepth(p.y),
-      label: sc.add.text(p.x, p.y - 58, (S.kitName || "Sponsor-verktøykasse").toUpperCase(), { fontFamily: "Oswald, sans-serif", fontSize: "12px", fontStyle: "700", color: P, stroke: "#0c0a09", strokeThickness: 4 }).setOrigin(.5).setDepth(p.y + 30) };
+      label: sc.add.text(p.x, p.y - 58, (S.kitName || "Sponsorverktøykasse").toUpperCase(), { fontFamily: "Oswald, sans-serif", fontSize: "12px", fontStyle: "700", color: P, stroke: "#0c0a09", strokeThickness: 4 }).setOrigin(.5).setDepth(p.y + 30) };
     sc.fx && sc.fx.burst(p.x, p.y, 12);
   }
   function removeKit() { if (!kit) return; ["glow", "glow2", "rays", "img", "label"].forEach(function (k) { kit[k].destroy(); }); kit = null; }
@@ -377,7 +377,7 @@
     sc.tweens.add({ targets: tx, scale: 1.1, duration: 260, ease: "Back.easeOut", onComplete: function () { sc.tweens.add({ targets: tx, y: tx.y - 40, alpha: 0, delay: 500, duration: 600, onComplete: function () { tx.destroy(); } }); } });
     try { window.__extrasSfx && window.__extrasSfx.heal(); setTimeout(function () { window.__extrasSfx && window.__extrasSfx.fanfare(); }, 200); } catch (e) {}
     try { navigator.vibrate && navigator.vibrate([30, 40, 30, 40, 60]); } catch (e) {}
-    try { window.__extrasPopup && window.__extrasPopup((S.kitName || "Sponsor-verktøykasse") + "! Levert av " + NAME + (EX ? " (" + EXL.toLowerCase() + ")" : ""), true); } catch (e) {}
+    try { window.__extrasPopup && window.__extrasPopup((S.kitName || "Sponsorverktøykasse") + "! Levert av " + NAME + (EX ? " (" + EXL.toLowerCase() + ")" : ""), true); } catch (e) {}
     flash(boostEl, .95, 500);
     };
     var fxGate = function () { var wait = (window.__smBusyUntil || 0) - Date.now(); if (wait > 0) setTimeout(fxGate, wait + 60); else fxRun(); };

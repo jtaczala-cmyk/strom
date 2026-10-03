@@ -10,7 +10,7 @@
    Pure add-on: hooks window.__phaserGame / window.__store, no files, no external assets. */
 (function () {
   "use strict";
-  var CFG = {"slogans": [{"t": "113 – ambulanse", "k": "amb", "e": "🚑"}, {"t": "Lås og merk", "k": "lock", "e": "🔒"}, {"t": "Mål før du tar", "k": "meter", "e": "🔎"}, {"t": "Verneutstyr på", "k": "helmet", "e": "⛑️"}, {"t": "SJA – risikovurdering", "k": "sja", "e": "📋"}, {"t": "110 brann", "k": "fire", "e": "🚒"}, {"t": "Stopp ved tvil", "k": "stop", "e": "🛑"}, {"t": "Frakoble – sikre – verifisere", "k": "steps", "e": "🔌"}, {"t": "112 politi", "k": "police", "e": "🚓"}, {"t": "Hjertestarter – vit hvor", "k": "aed", "e": "❤️"}, {"t": "RUH – meld fra", "k": "ruh", "e": "📣"}, {"t": "Test testeren før/etter", "k": "test", "e": "✅"}, {"t": "Avstand til spenning", "k": "dist", "e": "⚡"}, {"t": "Strømulykke? Bryt strømmen", "k": "breaker", "e": "🔌"}, {"t": "Jord og kortslutt", "k": "ground", "e": "🔗"}, {"t": "Førstehjelp – øv årlig", "k": "generic", "e": "🩹"}], "ui": {"learned": "I dag lærte du:", "progress": "Du har sett {n} av {t} huskeregler. Spill videre for å se alle.", "done": "Du har sett alle {t} huskereglene. Neste runder repeterer dem.", "note": "Dette erstatter ikke FSE-kurset."}};
+  var CFG = {"slogans": [{"t": "113 – ambulanse", "k": "amb", "e": "🚑"}, {"t": "Lås og merk", "k": "lock", "e": "🔒"}, {"t": "Mål før du tar i", "k": "meter", "e": "🔎"}, {"t": "Verneutstyr på", "k": "helmet", "e": "⛑️"}, {"t": "SJA – sikker jobbanalyse", "k": "sja", "e": "📋"}, {"t": "110 – brann", "k": "fire", "e": "🚒"}, {"t": "Stopp ved tvil", "k": "stop", "e": "🛑"}, {"t": "Frakoble – sikre – kontrollere", "k": "steps", "e": "🔌"}, {"t": "112 – politi", "k": "police", "e": "🚓"}, {"t": "Hjertestarter – vet du hvor?", "k": "aed", "e": "❤️"}, {"t": "RUH – meld fra", "k": "ruh", "e": "📣"}, {"t": "Test testeren før/etter", "k": "test", "e": "✅"}, {"t": "Avstand til spenning", "k": "dist", "e": "⚡"}, {"t": "Strømulykke? Bryt strømmen", "k": "breaker", "e": "🔌"}, {"t": "Jord og kortslutt", "k": "ground", "e": "🔗"}, {"t": "Førstehjelp – øv årlig", "k": "generic", "e": "🩹"}], "ui": {"learned": "I dag lærte du:", "progress": "Du har sett {n} av {t} huskeregler. Spill videre for å se alle.", "done": "Du har sett alle {t} huskereglene. De neste rundene gjentar dem.", "note": "Dette erstatter ikke FSE-kurset."}};
   var L = CFG.slogans, U = CFG.ui, KEY = "strom-demo-slogans-v1";
   var mqR = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)"), reduced = !!(mqR && mqR.matches);
   try { mqR.addEventListener("change", function () { reduced = mqR.matches; }); } catch (e) {}
@@ -65,7 +65,7 @@
 
   /* ---------------- 1) enemy introductions (corner chip, once per type per round) ---------------- */
   var DESC = {
-    plumber: ["Rørlegger", "rask, går tett på"], clerk: ["Kontor", "kaster tegninger"], bricklayer: ["Murer", "kaster murstein"],
+    plumber: ["Rørlegger", "rask, går tett på"], clerk: ["Kontorist", "kaster tegninger"], bricklayer: ["Murer", "kaster murstein"],
     welder: ["Sveiser", "sveisegnister"], foreman: ["Formannen", "sjokkbølge – hold avstand"], manager: ["Byggelederen", "siste sjef"]
   };
   var chip = null, chipQ = [], chipBusy = false, seenRoles = {}, coachUntil = 0;
@@ -305,7 +305,7 @@
       if (t > 1.4) { var p = seg(t, 1.4, 1.9); g.save(); g.translate(x + 13 * u, y + 15 * u); g.rotate(-.6 + Math.sin(t * 14) * .08 * (1 - p)); g.fillStyle = "#facc15"; g.fillRect(-1.3 * u, -11 * u, 2.6 * u, 10 * u); g.fillStyle = "#1c1917"; g.beginPath(); g.moveTo(-1.3 * u, -1 * u); g.lineTo(1.3 * u, -1 * u); g.lineTo(0, 2 * u); g.fill(); g.restore(); }
     }); },
     steps: function () { return piece(3.0, function (t, Lo) {
-      var u = Lo.u, sp = Math.min(27 * u, W * .3), xs = [Lo.cx - sp, Lo.cx, Lo.cx + sp], W3 = ["FRAKOBLE", "SIKRE", "VERIFISERE"];
+      var u = Lo.u, sp = Math.min(27 * u, W * .3), xs = [Lo.cx - sp, Lo.cx, Lo.cx + sp], W3 = ["FRAKOBLE", "SIKRE", "KONTROLLERE"];
       for (var i = 0; i < 3; i++) {
         var a0 = .1 + i * .5, p = eOutBack(seg(t, a0, a0 + .35)); if (p <= 0) continue;
         g.save(); g.translate(xs[i], Lo.ay); g.scale(p, p);
