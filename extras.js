@@ -1,6 +1,6 @@
 /*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
- *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE.
+ *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
 /* Extras for the game: leaderboard adapter, sound/vibration, mute toggle, humor.
    Plain classic script, loaded in <head> before the app bundle. */

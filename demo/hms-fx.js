@@ -1,6 +1,6 @@
 /*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
- *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE. */
+ *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE. */
 /* STRØM – SPONSORDEMO · HMS layer (2026-10-01)
    1) enemy name plates off; each enemy type is introduced once per round in a small corner chip (1.5 s)
    2) 3–4 short HMS/FSE slogans per round as animated canvas set-pieces, placed in calm moments;

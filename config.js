@@ -1,6 +1,6 @@
 /*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
- *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE.
+ *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
 /* Online leaderboard config (Supabase, EU region). Empty values = leaderboard on this device only.
    See LEADERBOARD_SETUP.md. The anon key is public by design; security comes from RLS policies. */

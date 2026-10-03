@@ -1,6 +1,6 @@
 /*! Copyright (c) 2026 Jacek Mariusz Taczała. All rights reserved.
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
- *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE. */
+ *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE. */
 /* HMS layer (2026-10-01, same as the /strom/demo/ HMS layer):
    1) enemy name plates off; each enemy type is introduced once per round in a small corner chip (2.5 s); wave banners off
    2) 3–4 short animated HMS/FSE slogans per round in the top band at ~54/41/27/13 s left; no new enemy wave starts while a
