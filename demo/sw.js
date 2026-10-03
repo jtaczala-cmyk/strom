@@ -2,7 +2,7 @@
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: https://github.com/jtaczala-cmyk/strom/issues. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
-const CACHE = "strom-demo-v16";
+const CACHE = "strom-demo-v17";
 const ASSETS = "strom-demo-assets-v1"; /* long-lived: survives version bumps (assets are renamed / ?v= versioned when they change) */
 const BASE = "/strom/demo/";
 const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2", BASE + "sponsor.js", BASE + "sponsor-fx.js", BASE + "hms-fx.js"];
