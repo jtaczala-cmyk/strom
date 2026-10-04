@@ -11,7 +11,8 @@ window.ANALYTICS_CONFIG = { goatcounter: "" };                // off
 nothing is loaded from gc.zgo.at. The only external request is the hit sent to
 `https://jtaczala-games.goatcounter.com/count`. It records:
 - one page view per visit (path `/prad/`, `/power/`, `/strom/`),
-- events `<game>-start` (a round starts) and `<game>-finish` (game-over screen).
+- events `<game>-start` (a round starts) and `<game>-finish` (game-over screen), sent after a random 0–15 s delay,
+  or immediately when the page is hidden/closed so they are not lost.
 
 GoatCounter sets no cookies, stores nothing in the browser and stores no IP address or personal data
 (IP + user agent are only kept in memory for up to 8 hours to count unique visits), so no cookie banner is

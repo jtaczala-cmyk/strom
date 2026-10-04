@@ -480,9 +480,28 @@
     s.setAttribute("data-goatcounter", "https://" + GC + ".goatcounter.com/count");
     (document.head || document.documentElement).appendChild(s);
   }
+  /* Events are sent after a random 0-15 s delay, but never lost: pending events are sent at once when the
+     page is hidden/closed (sendBeacon survives unload), and retried while count.js is still loading. */
+  var pend = [];
   function ev(name) {
     if (!on) return;
-    setTimeout(function () { evNow(name); }, Math.random() * 15000);
+    var it = { n: name, tries: 0 };
+    it.t = setTimeout(function () { send(it); }, Math.random() * 15000);
+    pend.push(it);
+  }
+  function send(it) {
+    var i = pend.indexOf(it); if (i < 0) return;
+    clearTimeout(it.t);
+    if (!(window.goatcounter && window.goatcounter.count)) {          /* count.js not loaded yet: retry */
+      if (++it.tries <= 40) it.t = setTimeout(function () { send(it); }, 500); else pend.splice(i, 1);
+      return;
+    }
+    pend.splice(i, 1); evNow(it.n);
+  }
+  function flush() { pend.slice().forEach(function (it) { it.tries = 99; send(it); }); }
+  if (on) {
+    document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); });
+    window.addEventListener("pagehide", flush);
   }
   function evNow(name) {
     try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: GAME + "-" + name, title: GAME + " " + name, event: true }); } catch (e) {}
