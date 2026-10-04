@@ -467,6 +467,8 @@
     var p = phase();
     el.style.display = (p === "playing" || p === "paused" || p === "over") ? "none" : "block";
   }
+  /* Sponsor demo withdrawn (2026-10-04): unregister a leftover /strom/demo/ service worker so no cached copy keeps running. */
+  try { if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { if (/\/strom\/demo\/$/.test(r.scope)) r.unregister(); }); }).catch(function () {}); } catch (e) {}
   /* Analytics: off unless window.ANALYTICS_CONFIG.goatcounter (config.js) holds a GoatCounter code. */
   var A = window.ANALYTICS_CONFIG || {};
   var GC = String(A.goatcounter || "").trim().toLowerCase();

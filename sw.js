@@ -2,7 +2,7 @@
  *  Proprietary and not open source: no copying, modification, distribution or commercial use
  *  without prior written permission. Contact: kontakt (at) stop60.no. See LICENSE.
  *  Third-party open-source components keep their own licences, see THIRD-PARTY-NOTICES.md. */
-const CACHE = "strom-nb-gh-v33";
+const CACHE = "strom-nb-gh-v34";
 const ASSETS = "strom-assets-v2"; /* long-lived: survives version bumps (assets are renamed / ?v= versioned when they change) */
 const BASE = "/strom/";
 const PRECACHE = [BASE, BASE + "favicon.svg", BASE + "apple-touch-icon.png", BASE + "icon-192.png", BASE + "icon-512.png", BASE + "qr.png", BASE + "extras.js", BASE + "hms-slogans.js", BASE + "config.js", BASE + "fonts/fonts.css", BASE + "fonts/ibm-plex-sans-latin.woff2", BASE + "fonts/ibm-plex-sans-latin-ext.woff2", BASE + "fonts/oswald-latin.woff2", BASE + "fonts/oswald-latin-ext.woff2"];
@@ -18,7 +18,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("strom-") && !k.startsWith("strom-demo-") && k !== CACHE && k !== ASSETS).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("strom-") && k !== CACHE && k !== ASSETS) /* also removes old strom-demo-* caches (demo withdrawn 2026-10-04) */.map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -32,7 +32,6 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
-  if (url.pathname.startsWith("/strom/demo/")) return; /* the sponsor demo has its own SW + caches */
 
   // Pages/HTML and the SW-adjacent files: always network first, bypassing the HTTP cache.
   const isDoc = req.mode === "navigate" || url.pathname === BASE || url.pathname.endsWith(".html") || url.pathname.endsWith(".webmanifest") || url.pathname.endsWith("/config.js") || url.pathname.endsWith("/extras.js") || url.pathname.endsWith("/hms-slogans.js");
