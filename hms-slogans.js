@@ -6,7 +6,9 @@
    2) 3–4 short animated HMS/FSE slogans per round in the top band at ~54/41/27/13 s left; no new enemy wave starts while a
       slogan plays; pop-ups wait until it ends; never blocks input (pointer-events:none)
    3) "learned" list on the game-over card   4) synthesised heartbeat following the enemy count (respects mute)
-   Hooks window.__phaserGame / window.__store. */
+   Hooks window.__phaserGame / window.__store.
+   2026-10-09 (owner request): ALL bubbles off - control hint at round start, enemy corner chips and slogan set-pieces
+   are disabled (NO_BUBBLES); heartbeat, name-plate/wave-banner suppression stay. */
 (function () {
   "use strict";
   var CFG = {"slogans": [{"t": "113 – ambulanse", "k": "amb", "e": "🚑"}, {"t": "Lås og merk", "k": "lock", "e": "🔒"}, {"t": "Mål før du tar i", "k": "meter", "e": "🔎"}, {"t": "Verneutstyr på", "k": "helmet", "e": "⛑️"}, {"t": "SJA – sikker jobbanalyse", "k": "sja", "e": "📋"}, {"t": "110 – brann", "k": "fire", "e": "🚒"}, {"t": "Stopp ved tvil", "k": "stop", "e": "🛑"}, {"t": "Frakoble – sikre – kontrollere", "k": "steps", "e": "🔌"}, {"t": "112 – politi", "k": "police", "e": "🚓"}, {"t": "Hjertestarter – vet du hvor?", "k": "aed", "e": "❤️"}, {"t": "RUH – meld fra", "k": "ruh", "e": "📣"}, {"t": "Test testeren før/etter", "k": "test", "e": "✅"}, {"t": "Avstand til spenning", "k": "dist", "e": "⚡"}, {"t": "Strømulykke? Bryt strømmen", "k": "breaker", "e": "🔌"}, {"t": "Jord og kortslutt", "k": "ground", "e": "🔗"}, {"t": "Førstehjelp – øv årlig", "k": "generic", "e": "🩹"}], "ui": {"learned": "I dag lærte du:", "progress": "Du har sett {n} av {t} huskeregler. Spill videre for å se alle.", "done": "Du har sett alle {t} huskereglene. De neste rundene gjentar dem.", "note": "Dette erstatter ikke FSE-kurset."}};
@@ -39,6 +41,9 @@
     ".sm-learn li{margin:0;padding:3px 9px 3px 6px;border-radius:999px;background:rgba(250,204,21,.13);border:1px solid rgba(250,204,21,.35);font:600 13px/1.3 Oswald,'IBM Plex Sans',sans-serif;letter-spacing:.02em;color:#fef3c7;white-space:nowrap}" +
     ".sm-learn li span{margin-right:5px}.sm-learn p{margin:7px 0 0;font:400 11px/1.35 'IBM Plex Sans',system-ui,sans-serif;color:#a8a29e}";
   (document.head || document.documentElement).appendChild(css);
+  var NO_BUBBLES = true;
+  /* hide the control-hint bubble shown at round start ("Dra = gå · Hold STRØM = angrip ...", rendered by the app bundle) */
+  if (NO_BUBBLES) css.textContent += ".top-\\[38\\%\\]{display:none!important}";
 
   /* ---------------- 1) enemy introductions (corner chip, once per type per round) ---------------- */
   var DESC = {"plumber": ["Rørlegger", "rask, går tett på"], "clerk": ["Kontorist", "kaster tegninger"], "bricklayer": ["Murer", "kaster murstein"], "welder": ["Sveiser", "sveisegnister"], "foreman": ["Formannen", "sjokkbølge – hold avstand"], "manager": ["Byggelederen", "siste sjef"]};
@@ -48,6 +53,7 @@
     chip = document.createElement("div"); chip.id = "hms-chip"; chip.setAttribute("aria-live", "polite"); document.body.appendChild(chip); return chip;
   }
   function chipNext() {
+    if (NO_BUBBLES) { chipQ = []; return; }
     if (chipBusy || !chipQ.length) return;
     var wait = coachUntil - Date.now(); if (wait > 0) { chipBusy = true; setTimeout(function () { chipBusy = false; chipNext(); }, wait + 50); return; }
     var r = chipQ.shift(), d = DESC[r] || [r, ""], c = chipEl();
@@ -355,6 +361,7 @@
   }
   function stopAnim() { anim = null; if (raf) cancelAnimationFrame(raf); raf = 0; if (g) g.clearRect(0, 0, W, H); if (cv) cv.style.display = "none"; }
   function playSlogan(i) {
+    if (NO_BUBBLES) return 0;
     canvas(); fit(); measureSafe();
     var item = L[i], mk = THEMES[item.k] || THEMES.generic, th = mk(item);
     anim = { i: i, item: item, th: th, t: 0, until: Date.now() + th.dur * 1000 };
@@ -447,7 +454,7 @@
   function popupVisible() { var p = document.getElementById("extras-pop"); return !!(p && (p.style.opacity === "1" || parseFloat(getComputedStyle(p).opacity) > 0.02)); } /* incl. fade-out */
   var SLOTS = [54, 41, 27, 13]; /* target timeLeft per slogan: spread over the whole 60 s */
   function schedule(sc, os, dt) {
-    if (!round || anim) return;
+    if (NO_BUBBLES || !round || anim) return;
     var k = round.shown.length + round.skipped; if (k >= SLOTS.length) return;
     var t = sc.timeLeft, tg = SLOTS[k];
     if (t > tg + 2.5) return;                               /* window opens 2.5 s before the target */

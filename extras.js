@@ -277,7 +277,9 @@
     document.body.appendChild(popEl);
     return popEl;
   }
+  var NO_BUBBLES = true; /* 2026-10-09: all in-game pop-up bubbles off (owner request) */
   function popup(text, force) {
+    if (NO_BUBBLES) return;
     var now = Date.now();
     if (force && now < (window.__smBusyUntil || 0)) { setTimeout(function () { popup(text, true); }, window.__smBusyUntil - now + 80); return; }
     if (!force && now - lastPop < 4000) return; if (!force && now < (window.__smBusyUntil || 0)) return;
