@@ -485,7 +485,7 @@
   /* Events are sent after a random 0-15 s delay, but never lost: pending events are sent at once when the
      page is hidden/closed (sendBeacon survives unload), and retried while count.js is still loading. */
   var pend = [];
-  function ev(name) {
+  function ev(name) { gcPlayTime(name);
     if (!on) return;
     var it = { n: name, tries: 0 };
     it.t = setTimeout(function () { send(it); }, Math.random() * 15000);
@@ -501,6 +501,15 @@
     pend.splice(i, 1); evNow(it.n);
   }
   function flush() { pend.slice().forEach(function (it) { it.tries = 99; send(it); }); }
+
+/* Play time (anonymous): '<game>-time-<bucket>' sent once per game, on game over or when the page is left. Nothing stored. */
+function gcPlayTime(n) { if (/^start/.test(n)) gcPlayTime.t0 = Date.now(); else if (/^(finish|over)/.test(n)) gcPlayEnd(); }
+function gcPlayEnd() { var t0 = gcPlayTime.t0; if (!t0) return; gcPlayTime.t0 = 0; var m = (Date.now() - t0) / 60000;
+  ev('time-' + (m < 1 ? '0-1m' : m < 3 ? '1-3m' : m < 5 ? '3-5m' : m < 10 ? '5-10m' : m < 20 ? '10-20m' : '20m+')); }
+if (on) {
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') { gcPlayEnd(); flush(); } });
+  window.addEventListener('pagehide', function () { gcPlayEnd(); flush(); });
+}
   if (on) {
     document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); });
     window.addEventListener("pagehide", flush);
