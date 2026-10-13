@@ -529,7 +529,7 @@
 /* ---- leaderboard notice (privacy, 2026-09-30) ---- */
 (function () {
   "use strict";
-  var TXT = "Kallenavnet og resultatet vises på den offentlige topplisten på nett. Ikke bruk fullt navn eller e-post.", LINK = "Personvern", BOX = "Vis resultatet mitt på topplisten på nett", HREF = "/strom/personvern/", KEY = "lb-online-off";
+  var TXT = "Kallenavnet og resultatet vises på den offentlige topplisten på nett. Ikke bruk fullt navn eller e-post.", LINK = "Personvern", BOX = "Jeg er 16 år eller eldre (18 i India) og vil vise kallenavn, poeng, KO og bølge på topplisten på nett", HREF = "/strom/personvern/", KEY = "lb-online-off";
   function on() { return !!(window.__lb && window.__lb.online !== undefined && (window.LEADERBOARD_CONFIG || {}).supabaseUrl); }
   function tick() {
     if (!on()) return;
