@@ -1,5 +1,5 @@
 var TILT_KEY = 'strom_tilt_v1';
-/* Optional tilt steering (DeviceOrientation). Off by default; touch stays the default. Test build only. */
+/* Optional tilt steering (DeviceOrientation). Off by default; touch stays the default. */
 var TILT = (function () {
   var K = typeof TILT_KEY === 'string' ? TILT_KEY : 'tilt_v1';
   var T = { on: false, have: false, rx: 0, ry: 0, x0: 0, y0: 0, cal: true, ix: 0, iy: 0, last: 0, granted: false, ang: -1, dz: 3, full: 18, onchange: null, lt: 0 };
