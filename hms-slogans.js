@@ -46,7 +46,7 @@
   if (NO_BUBBLES) css.textContent += ".top-\\[38\\%\\]{display:none!important}";
 
   /* ---------------- 1) enemy introductions (corner chip, once per type per round) ---------------- */
-  var DESC = {"plumber": ["Rørlegger", "rask, går tett på"], "clerk": ["Kontorist", "kaster tegninger"], "bricklayer": ["Murer", "kaster murstein"], "welder": ["Sveiser", "sveisegnister"], "foreman": ["Formannen", "sjokkbølge – hold avstand"], "manager": ["Byggelederen", "siste sjef"]};
+  var DESC = {"plumber": ["Rask", "rask, går tett på"], "clerk": ["Kontorbygg", "kaster tegninger"], "bricklayer": ["Murstein", "kaster murstein"], "welder": ["Gnister", "sprer gnister"], "foreman": ["Bølge", "sjokkbølge – hold avstand"], "manager": ["Siste", "kommer sist"]};
   var chip = null, chipQ = [], chipBusy = false, seenRoles = {}, coachUntil = 0;
   function chipEl() {
     if (chip && document.body.contains(chip)) return chip;
@@ -477,7 +477,7 @@
     sc.__hms = true; scene = sc;
     // name plates off (each type gets one short corner intro instead)
     sc.labelApproaching = function (list) { (list || []).forEach(function (e) { if (e && e.plate) e.plate.setVisible(false); }); };
-    // wave banners ("N på tomten", "Formannen på tomten", ...) off – the corner chip introduces new types
+    // wave banners ("N på tomten", "Bølge på tomten", ...) off – the corner chip introduces new types
     var sb = sc.spawnBurst;
     sc.spawnBurst = function () { var r = sb.apply(this, arguments); try { this.bannerT = 0; window.__store.getState().patch({ banner: null }); } catch (e) {} return r; };
     sc.events.on("postupdate", function () {

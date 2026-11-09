@@ -19,7 +19,7 @@
  "text": {
   "soundOn": "Lyd på",
   "soundOff": "Lyd av",
-  "start": "Ett minutt. Sjefen teller.",
+  "start": "Ett minutt. Tiden går.",
   "random": [
    "Regel 1: frakoble – fra alle steder anlegget kan få spenning.",
    "Regel 2: sikre mot innkobling – lås og merk.",
@@ -58,10 +58,10 @@
    "Etter pause: sjekk låsene"
   ],
   "titles": [
-   "Lærling med kost",
-   "Hjelpemann på prøve",
-   "Bas",
-   "Elektriker med fagbrev",
+   "Første steg",
+   "Stadig tryggere",
+   "Stø hånd",
+   "Fullt minutt",
    "Legenden i sikringsskapet"
   ],
   "titleLabel": "Tittelen din:",
