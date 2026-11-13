@@ -612,3 +612,23 @@ if (on) {
   setInterval(hookScene, 400);
 })();
 /* ---- end tech fixes 2026-10-01 ---- */
+
+/* ---- mobile: skip the poster QR wall (2026-11-13) ---- */
+(function () {
+  function phone() {
+    try {
+      if (window.matchMedia("(pointer: coarse)").matches) return true;
+      if (window.matchMedia("(hover: none)").matches) return true;
+    } catch (e) {}
+    return window.innerWidth < 800;
+  }
+  if (!phone()) return;
+  if (document.getElementById("s60-qrl-fix")) return;
+  var st = document.createElement("style");
+  st.id = "s60-qrl-fix";
+  st.textContent = ".qrl-qr{display:none!important}"
+    + ".qrl-cue{display:none!important}"
+    + ".qrl-hero{min-height:0!important;padding-bottom:12px}"
+    + ".qrl-scroll{overflow:auto}";
+  (document.head || document.documentElement).appendChild(st);
+})();
