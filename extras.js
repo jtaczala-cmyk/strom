@@ -632,3 +632,277 @@ if (on) {
     + ".qrl-scroll{overflow:auto}";
   (document.head || document.documentElement).appendChild(st);
 })();
+
+/* ---- game-over result postcard (2026-11-14) ----
+   The built share button still sends the generic blurb and copies only the URL.
+   On phase "over", show the emoji result and make that button share the same text.
+   The start/menu/pause "Del med venner" button is left alone. */
+(function () {
+  "use strict";
+  var PATH = "stop60.no/strom";
+  var LABEL = "Del resultatet";
+  var COPIED = "Kopiert";
+  var roundSeen = false;
+  var priorHigh = 0;
+  var copiedUntil = 0;
+  var busy = false;
+  var hooked = false;
+
+  function state() {
+    return window.__store && window.__store.getState && window.__store.getState();
+  }
+  function whole(n) {
+    n = +n;
+    if (!isFinite(n) || n < 0) return 0;
+    return Math.floor(n);
+  }
+  /* setHigh() raises highScore to this score before phase becomes "over",
+     so a tie would also satisfy score >= highScore. A record is strictly above
+     the high from when the round started. A direct __store jump (no round)
+     uses the highScore on that state. */
+  function isRecord(s) {
+    var score = +s.score || 0;
+    if (!(score > 0)) return false;
+    if (roundSeen) return score > priorHigh;
+    var high = typeof s.highScore === "number" ? s.highScore : 0;
+    return score >= high;
+  }
+  function postcardText(s) {
+    s = s || state() || {};
+    var score = whole(s.score);
+    var kills = whole(s.kills);
+    var lines = ["STR\u00D8M", "\u26A1 " + score + " poeng \u00b7 " + kills + " KO"];
+    if (isRecord(s)) lines.push("\uD83C\uDFC6 Ny rekord");
+    lines.push(PATH);
+    return lines.join("\n");
+  }
+  function hookStore() {
+    var st = window.__store;
+    if (!st || !st.subscribe || hooked) return;
+    hooked = true;
+    var last = st.getState() || {};
+    if (last.phase === "playing" || last.phase === "paused") {
+      roundSeen = true;
+      priorHigh = +last.highScore || 0;
+    }
+    st.subscribe(function (s) {
+      var prev = last;
+      last = s || {};
+      if (s && s.phase === "playing" && prev.phase !== "playing" && prev.phase !== "paused") {
+        roundSeen = true;
+        priorHigh = typeof prev.highScore === "number" ? prev.highScore : 0;
+      }
+      if (s && s.phase === "over" && prev.phase !== "over") paint();
+    });
+  }
+  function overRoot() {
+    return document.querySelector(".goscroll");
+  }
+  function scoreLine(root) {
+    var ps = root.querySelectorAll("p");
+    for (var i = 0; i < ps.length; i++) {
+      var t = ps[i].textContent || "";
+      if (t.indexOf("poeng") >= 0 && t.indexOf("KO") >= 0) return ps[i];
+    }
+    return null;
+  }
+  function buttonText(btn) {
+    var t = "";
+    for (var i = 0; i < btn.childNodes.length; i++) {
+      if (btn.childNodes[i].nodeType === 3) t += btn.childNodes[i].nodeValue;
+    }
+    return t.replace(/\s+/g, " ").trim();
+  }
+  function setButtonText(btn, label) {
+    for (var i = 0; i < btn.childNodes.length; i++) {
+      var n = btn.childNodes[i];
+      if (n.nodeType === 3 && n.nodeValue.trim()) {
+        n.nodeValue = label;
+        return true;
+      }
+    }
+    return false;
+  }
+  function shareButton(root) {
+    var btns = root.querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      var b = btns[i];
+      if (b.querySelector("svg.lucide-share")) return b;
+      var tx = (b.textContent || "").replace(/\s+/g, " ").trim();
+      if (tx === "Del med venner" || tx === LABEL || tx === COPIED) return b;
+    }
+    return null;
+  }
+  function restartButton(root) {
+    var btns = root.querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      if ((btns[i].textContent || "").replace(/\s+/g, " ").trim() === "Inn igjen") return btns[i];
+    }
+    return null;
+  }
+  function syncLabel(btn) {
+    if (!btn) return;
+    var cur = buttonText(btn);
+    var want = Date.now() < copiedUntil ? COPIED : LABEL;
+    if (cur === want) return;
+    if (cur !== "Del med venner" && cur !== LABEL && cur !== COPIED) return;
+    setButtonText(btn, want);
+  }
+  function flashCopied() {
+    copiedUntil = Date.now() + 1600;
+    var root = overRoot();
+    if (root) syncLabel(shareButton(root));
+    setTimeout(paint, 1700);
+  }
+  function trackShare() {
+    try { if (typeof window.__track === "function") window.__track("share"); } catch (e) {}
+  }
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try { ta.setSelectionRange(0, text.length); } catch (e) {}
+      var ok = document.execCommand("copy");
+      ta.remove();
+      return !!ok;
+    } catch (e) { return false; }
+  }
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return legacyCopy(text); });
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+  function onCopied() {
+    trackShare();
+    flashCopied();
+  }
+  function promptCopy(text) {
+    var ans = null;
+    try { ans = window.prompt("Kopier resultatet", text); } catch (e) { ans = null; }
+    if (ans != null) onCopied();
+  }
+  function doCopy(text) {
+    busy = true;
+    copyText(text).then(function (ok) {
+      busy = false;
+      if (ok) onCopied();
+      else promptCopy(text);
+    }, function () {
+      busy = false;
+      promptCopy(text);
+    });
+  }
+  function shareResult() {
+    if (busy) return;
+    var s = state();
+    if (!s || s.phase !== "over") return;
+    var text = postcardText(s);
+    if (typeof navigator.share === "function") {
+      var p;
+      try { p = navigator.share({ title: "STR\u00D8M", text: text }); }
+      catch (e) {
+        if (e && e.name === "AbortError") return;
+        doCopy(text);
+        return;
+      }
+      if (!p || typeof p.then !== "function") { doCopy(text); return; }
+      busy = true;
+      p.then(function () {
+        busy = false;
+        trackShare();
+      }, function (e) {
+        busy = false;
+        if (e && e.name === "AbortError") return;
+        doCopy(text);
+      });
+      return;
+    }
+    doCopy(text);
+  }
+  function ensurePostcard(root, text) {
+    var grid = root.querySelector("#overGrid");
+    if (!grid) {
+      grid = document.createElement("pre");
+      grid.id = "overGrid";
+      grid.setAttribute("role", "button");
+      grid.tabIndex = 0;
+      var score = scoreLine(root);
+      var restart = restartButton(root);
+      if (score) score.after(grid);
+      else if (restart) restart.parentNode.insertBefore(grid, restart);
+      else root.appendChild(grid);
+    } else if (scoreLine(root) && grid.previousElementSibling !== scoreLine(root)) {
+      scoreLine(root).after(grid);
+    }
+    if (grid.textContent !== text) grid.textContent = text;
+  }
+  var painting = false;
+  function paint() {
+    if (painting || !document.body) return;
+    painting = true;
+    try {
+      var s = state();
+      if (!s || s.phase !== "over") return;
+      var root = overRoot();
+      if (!root) return;
+      ensurePostcard(root, postcardText(s));
+      syncLabel(shareButton(root));
+    } finally {
+      painting = false;
+    }
+  }
+  var css = document.createElement("style");
+  css.id = "strom-postcard";
+  css.textContent = "#overGrid{display:block;box-sizing:border-box;margin:10px auto 0;padding:10px 12px;max-width:min(18em,100%);min-width:0;"
+    + "background:rgba(18,17,15,.55);border:1px solid rgba(45,212,191,.5);border-radius:12px;"
+    + "font:600 16px/1.45 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;text-align:center;letter-spacing:.03em;"
+    + "cursor:pointer;color:#f5f1e8;-webkit-user-select:text;user-select:text;touch-action:manipulation}"
+    + "#overGrid:focus-visible{outline:2px solid #2dd4bf;outline-offset:2px}";
+  (document.head || document.documentElement).appendChild(css);
+
+  document.addEventListener("click", function (e) {
+    var root = overRoot();
+    if (!root) return;
+    var t = e.target;
+    if (!t || !t.closest || !root.contains(t)) return;
+    var grid = t.id === "overGrid" ? t : t.closest("#overGrid");
+    var btn = t.closest("button");
+    var hit = (grid && root.contains(grid)) || (btn && btn === shareButton(root));
+    if (!hit) return;
+    e.preventDefault();
+    e.stopPropagation();
+    shareResult();
+  }, true);
+  document.addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (!t || t.id !== "overGrid") return;
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    e.stopPropagation();
+    shareResult();
+  }, true);
+
+  var watching = false;
+  var mo = new MutationObserver(function () { paint(); });
+  function tick() {
+    hookStore();
+    var s = state();
+    var over = !!(s && s.phase === "over" && document.body);
+    if (over && !watching) {
+      mo.observe(document.body, { childList: true, subtree: true });
+      watching = true;
+    } else if (!over && watching) {
+      mo.disconnect();
+      watching = false;
+    }
+    paint();
+  }
+  tick();
+  setInterval(tick, 400);
+})();
